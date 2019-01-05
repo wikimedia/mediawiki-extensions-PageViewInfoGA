@@ -4,8 +4,9 @@
 	"author": [
 		"Lens"
 	],
+	"url": "https://github.com/femiwiki/unifiedExtensionForFemiwiki",
 	"descriptionmsg": "unifiedextensionforfemiwiki-desc",
-	"license-name": "GPL-2.0+",
+	"license-name": "GPL-2.0-or-later",
 	"type": "specialpage",
 	"requires": {
 		"extensions": {
