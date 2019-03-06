@@ -3,15 +3,15 @@
 class FemiwikiHooks {
 
 	/**
-	 * 푸터에 몇 링크들을 추가합니다.
+	 * Add a few links to the footer.
 	 * @return bool Sends a line to the debug log if false.
 	 */
 	public static function onSkinTemplateOutputPageBeforeExec( &$skin, &$template ) {
-		// 이용 약관을 추가합니다. 이용 약관은 앞쪽에 추가합니다.
+		// Add Terms link to the front.
 		$template->set( 'femiwiki-terms-label', $template->getSkin()->footerLink( 'femiwiki-terms-label', 'femiwiki-terms-page' ) );
 		array_unshift( $template->data['footerlinks']['places'], 'femiwiki-terms-label' );
 
-		// 권리 침해 신고를 추가합니다.
+		// Add Infringement Notification likn.
 		$template->set( 'femiwiki-report-infringement-label', $template->getSkin()->footerLink( 'femiwiki-report-infringement-label', 'femiwiki-report-infringement-page' ) );
 		$template->data['footerlinks']['places'][] = 'femiwiki-report-infringement-label';
 
@@ -19,7 +19,7 @@ class FemiwikiHooks {
 	}
 
 	/**
-	 * 페미위키로 통하는 외부 링크는 내부 링크로 취급합니다.
+	 * Treat external links to FemiWiki as internal links.
 	 */
 	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
 		global $wgCanonicalServer;
@@ -37,7 +37,7 @@ class FemiwikiHooks {
 	}
 
 	/**
-	 * Sidebar에서도 페미위키로 통하는 외부 링크는 내부 링크로 취급합니다.
+	 * Treat external links to FemiWiki as internal links in the Sidebar.
 	 */
 	public static function onSidebarBeforeOutput( Skin $skin, &$bar ) {
 		global $wgCanonicalServer;
@@ -53,7 +53,7 @@ class FemiwikiHooks {
 	}
 
 	/**
-	 * 모든 페이지에 Google Tag Manager를 추가합니다.
+	 * Add Google Tag Manager to all pages.
 	 */
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
 		global $wgGoogleAnalyticsTrackingID;
