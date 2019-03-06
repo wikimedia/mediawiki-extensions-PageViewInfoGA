@@ -16,7 +16,7 @@
 	"AutoloadClasses": {
 		"SpecialUncategorizedCategoryTree": "specials/SpecialUncategorizedCategoryTree.php",
 		"SpecialOrderedWhatlinkshere": "specials/SpecialOrderedWhatlinkshere.php",
-		"FemiwikiHooks": "Hooks.php"
+		"FemiwikiHooks": "FemiwikiHooks.php"
 	},
 	"Hooks": {
 		"SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec",

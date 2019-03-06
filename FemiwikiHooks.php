@@ -4,6 +4,9 @@ class FemiwikiHooks {
 
 	/**
 	 * Add a few links to the footer.
+	 *
+	 * @param SkinTemplate &$skin
+	 * @param QuickTemplate &$template
 	 * @return bool Sends a line to the debug log if false.
 	 */
 	public static function onSkinTemplateOutputPageBeforeExec( &$skin, &$template ) {
@@ -20,11 +23,18 @@ class FemiwikiHooks {
 
 	/**
 	 * Treat external links to FemiWiki as internal links.
+	 *
+	 * @param string &$url
+	 * @param string &$text
+	 * @param string &$link
+	 * @param string &$attribs
+	 * @param string $linktype
+	 * @return bool
 	 */
 	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
 		global $wgCanonicalServer;
 
-		if ( strpos( $wgCanonicalServer, parse_url( $url, PHP_URL_HOST )) === false ) {
+		if ( strpos( $wgCanonicalServer, parse_url( $url, PHP_URL_HOST ) ) === false ) {
 			return true;
 		}
 
@@ -38,29 +48,38 @@ class FemiwikiHooks {
 
 	/**
 	 * Treat external links to FemiWiki as internal links in the Sidebar.
+	 *
+	 * @param Skin $skin
+	 * @param Array &$bar
+	 * @return bool
 	 */
 	public static function onSidebarBeforeOutput( Skin $skin, &$bar ) {
 		global $wgCanonicalServer;
 
-		foreach ( $bar as $heading => $content )
+		foreach ( $bar as $heading => $content ) {
 			foreach ( $content as $key => $item ) {
 				if ( isset( $item['href'] ) && strpos( $wgCanonicalServer, parse_url( $item['href'], PHP_URL_HOST ) ) !== false ) {
 					unset( $bar[$heading][$key]['rel'] );
 					unset( $bar[$heading][$key]['target'] );
 				}
 			}
+		}
 		return true;
 	}
 
 	/**
 	 * Add Google Tag Manager to all pages.
+	 *
+	 * @param OutputPage &$out
+	 * @param Skin &$skin
+	 * @return bool
 	 */
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
 		global $wgGoogleAnalyticsTrackingID;
 
-			if ( $wgGoogleAnalyticsTrackingID == '' )
+			if ( $wgGoogleAnalyticsTrackingID == '' ) {
 				return true;
-
+			}
 			$googleGlobalSiteTag = <<<EOF
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={$wgGoogleAnalyticsTrackingID}"></script>
