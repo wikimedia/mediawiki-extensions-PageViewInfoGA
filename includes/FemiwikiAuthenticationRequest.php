@@ -1,0 +1,20 @@
+<?php
+
+use MediaWiki\Auth\AuthenticationRequest;
+
+class FemiwikiAuthenticationRequest extends AuthenticationRequest {
+	public $femiwikiOpenSesame;
+	/**
+	 * @see AuthenticationRequest::getFieldInfo()
+	 * @return array
+	 */
+	public function getFieldInfo() {
+		return [
+			'femiwikiOpenSesame' => [
+				'type' => 'string',
+				'label' => wfMessage( 'questycaptcha-createaccount' ),
+				'help' => wfMessage( 'captcha-info-help' ),
+			],
+		];
+	}
+}

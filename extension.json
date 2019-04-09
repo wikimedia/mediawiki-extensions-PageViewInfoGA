@@ -14,7 +14,16 @@
   "AutoloadClasses": {
     "SpecialUncategorizedCategoryTree": "specials/SpecialUncategorizedCategoryTree.php",
     "SpecialOrderedWhatlinkshere": "specials/SpecialOrderedWhatlinkshere.php",
-    "FemiwikiHooks": "includes/FemiwikiHooks.php"
+    "FemiwikiHooks": "includes/FemiwikiHooks.php",
+    "FemiwikiAuthenticationRequest": "includes/FemiwikiAuthenticationRequest.php",
+    "FemiwikiPreAuthenticationProvider": "includes/FemiwikiPreAuthenticationProvider.php"
+  },
+  "AuthManagerAutoConfig": {
+    "preauth": {
+      "FemiwikiPreAuthenticationProvider": {
+        "class": "FemiwikiPreAuthenticationProvider"
+      }
+    }
   },
   "Hooks": {
     "SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec",
