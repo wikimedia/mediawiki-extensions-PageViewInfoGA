@@ -12,7 +12,7 @@ class FemiwikiAuthenticationRequest extends AuthenticationRequest {
 		return [
 			'femiwikiOpenSesame' => [
 				'type' => 'string',
-				'label' => wfMessage( 'questycaptcha-createaccount' ),
+				'label' => wfMessage( 'unifiedextensionforfemiwiki-createaccount' ),
 				'help' => wfMessage( 'captcha-info-help' ),
 			],
 		];

@@ -2,5 +2,7 @@
   "@metadata": {
     "authors": []
   },
-  "unifiedextensionforfemiwiki-desc": "an extension for femiwiki. Extend the [[Special:UncategorizedCategories]] and [[Special:WhatLinksHere]] etc."
+  "unifiedextensionforfemiwiki-desc": "an extension for femiwiki. Extend the [[Special:UncategorizedCategories]] and [[Special:WhatLinksHere]] etc.",
+  "unifiedextensionforfemiwiki-createaccount": "Enter \"I am a feminist\" below",
+  "unifiedextensionforfemiwiki-createaccount-fail": "Please enter \"I am a feminist\" in the last form"
 }

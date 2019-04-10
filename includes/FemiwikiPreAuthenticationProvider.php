@@ -31,7 +31,7 @@ class FemiwikiPreAuthenticationProvider extends AbstractPreAuthenticationProvide
 		if ( self::testInternal( $req->femiwikiOpenSesame ) ) {
 			return Status::newGood();
 		} else {
-			return Status::newFatal( 'captcha-createaccount-fail' );
+			return Status::newFatal( 'unifiedextensionforfemiwiki-createaccount-fail' );
 		}
 	}
 

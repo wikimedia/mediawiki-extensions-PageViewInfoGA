@@ -2,5 +2,7 @@
   "@metadata": {
     "authors": []
   },
-  "unifiedextensionforfemiwiki-desc": "{{desc|what=extension|name=UnifiedExtensionForFemiwiki}}"
+  "unifiedextensionforfemiwiki-desc": "{{desc|what=extension|name=UnifiedExtensionForFemiwiki}}",
+  "unifiedextensionforfemiwiki-createaccount": "",
+  "unifiedextensionforfemiwiki-createaccount-fail": ""
 }
