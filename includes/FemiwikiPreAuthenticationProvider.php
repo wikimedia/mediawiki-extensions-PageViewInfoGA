@@ -2,6 +2,7 @@
 
 use MediaWiki\Auth\AbstractPreAuthenticationProvider;
 use MediaWiki\Auth\AuthenticationRequest;
+use MediaWiki\Auth\AuthManager;
 
 class FemiwikiPreAuthenticationProvider extends AbstractPreAuthenticationProvider {
 
@@ -13,7 +14,11 @@ class FemiwikiPreAuthenticationProvider extends AbstractPreAuthenticationProvide
 	 * @return AuthenticationRequest[]
 	 */
 	public function getAuthenticationRequests( $action, array $options ) {
-		return [ new FemiwikiAuthenticationRequest() ];
+		if ( $action === AuthManager::ACTION_CREATE ) {
+			return [ new FemiwikiAuthenticationRequest() ];
+		} else {
+			return [];
+		}
 	}
 
 	/**
