@@ -13,7 +13,7 @@
 2) LocalSettings.php에 다음을 추가하십시오. `$wgGoogleAnalyticsTrackingID`을 설정하지 않으면 구글 태그 매니저는 활성화되지 않습니다.
 ```php
 wfLoadExtension( 'UnifiedExtensionForFemiwiki' );
-$wgSpecialPages['Uncategorizedcategories'] = [SpecialUncategorizedCategoryTree::class];
-$wgSpecialPages['Whatlinkshere'] = [SpecialOrderedWhatlinkshere::class];
+$wgSpecialPages['Uncategorizedcategories'] = 'SpecialUncategorizedCategoryTree';
+$wgSpecialPages['Whatlinkshere'] = 'SpecialOrderedWhatlinkshere';
 $wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
 ```
