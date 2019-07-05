@@ -45,11 +45,12 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			$conds['imagelinks'][] = "il_from_namespace $nsComparison";
 		}
 
-		/*if ( $from ) {
+		/* ***Removed***
+		if ( $from ) {
 			$conds['templatelinks'][] = "tl_from >= $from";
 			$conds['pagelinks'][] = "pl_from >= $from";
 			$conds['imagelinks'][] = "il_from >= $from";
-		}*/
+		} */
 
 		if ( $hideredirs ) {
 			$conds['pagelinks']['rd_from'] = null;
@@ -61,6 +62,9 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			$conds, $target, $limit
 		) {
 			// Read an extra row as an at-end check
+			/* ***Removed***
+			$queryLimit = $limit + 1;
+			*/
 			$on = [
 				"rd_from = $fromCol",
 				'rd_title' => $target->getDBkey(),
@@ -68,20 +72,20 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			];
 			$on['rd_namespace'] = $target->getNamespace();
 			// Inner LIMIT is 2X in case of stale backlinks with wrong namespaces
-			$subQuery = $dbr->selectSQLText(
+			$subQuery = $dbr->buildSelectSubquery(
 				[ $table, 'redirect', 'page' ],
 				[ $fromCol, 'rd_from' ],
 				$conds[$table],
 				__CLASS__ . '::showIndirectLinks',
 				// Force JOIN order per T106682 to avoid large filesorts
-				[ 'ORDER BY' => $fromCol, 'STRAIGHT_JOIN' ],
+				[ 'ORDER BY' => $fromCol, /* ***Removed*** 'LIMIT' => 2 * $queryLimit,*/ 'STRAIGHT_JOIN' ],
 				[
 					'page' => [ 'INNER JOIN', "$fromCol = page_id" ],
 					'redirect' => [ 'LEFT JOIN', $on ]
 				]
 			);
 			return $dbr->select(
-				[ 'page', 'temp_backlink_range' => "($subQuery)" ],
+				[ 'page', 'temp_backlink_range' => $subQuery ],
 				[ 'page_id', 'page_namespace', 'page_title', 'rd_from', 'page_is_redirect' ],
 				[],
 				__CLASS__ . '::showIndirectLinks',
@@ -114,8 +118,19 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 					if ( $hidelinks || $hidetrans || $hideredirs || $hideimages ) {
 						$out->addHTML( $this->getFilterPanel() );
 					}
-					$errMsg = is_int( $namespace ) ? 'nolinkshere-ns' : 'nolinkshere';
-					$out->addWikiMsg( $errMsg, $this->target->getPrefixedText() );
+					$msgKey = is_int( $namespace ) ? 'nolinkshere-ns' : 'nolinkshere';
+					$link = $this->getLinkRenderer()->makeLink(
+						$this->target,
+						null,
+						[],
+						$this->target->isRedirect() ? [ 'redirect' => 'no' ] : []
+					);
+
+					$errMsg = $this->msg( $msgKey )
+						->params( $this->target->getPrefixedText() )
+						->rawParams( $link )
+						->parseAsBlock();
+					$out->addHTML( $errMsg );
 					$out->setStatusCode( 404 );
 				}
 			}
@@ -149,31 +164,50 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		}
 
 		// Sort by key and then change the keys to 0-based indices
-		usort( $rows, function ( $a, $b ) use ( $out ) {
+		/* ***Replaced***
+		ksort( $rows );
+		 */
+		usort( $rows, function ( $a, $b ) {
 			if ( isset( $a->page_title ) && isset( $b->page_title ) ) {
 				return strcasecmp( $a->page_title, $b->page_title );
 			} else {
 				return 0;
 			}
 		} );
+		// ***Replacement ends***
 		$rows = array_values( $rows );
 
 		$numRows = count( $rows );
 
 		// Work out the start and end IDs, for prev/next links
+		/* ***Replaced***
+		if ( $numRows > $limit ) {
+		 */
 		if ( $numRows - $from > $limit ) {
+		// ***Replacement ends***
 			// More rows available after these ones
 			// Get the ID from the last row in the result set
+			/* ***Replaced***
+			$nextId = $rows[$limit]->page_id;
+			 */
 			$nextNumber = $from + $limit;
-			// Remove undisplayed rows
+			/* ***Replaced***
+			$rows = array_slice( $rows, 0, $limit );
+			*/
 			$rows = array_slice( $rows, $from, $limit );
+			// ***Replacement ends***
 		} else {
 			// No more rows after
 			$nextNumber = false;
-			// Remove undisplayed rows
+			// ***Added***
 			$rows = array_slice( $rows, $from );
+			// ***Added ends***
 		}
+		/* ***Replaced***
+		$prevId = $from;
+		*/
 		$prevNumber = $from == 0 ? null : $from - $limit;
+		// ***Replacement ends***
 
 		// use LinkBatch to make sure, that all required data (associated with Titles)
 		// is loaded in one query
@@ -187,9 +221,25 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			if ( !$this->including() ) {
 				$out->addHTML( $this->whatlinkshereForm() );
 				$out->addHTML( $this->getFilterPanel() );
-				$out->addWikiMsg( 'linkshere', $this->target->getPrefixedText() );
 
+				$link = $this->getLinkRenderer()->makeLink(
+					$this->target,
+					null,
+					[],
+					$this->target->isRedirect() ? [ 'redirect' => 'no' ] : []
+				);
+
+				$msg = $this->msg( 'linkshere' )
+					->params( $this->target->getPrefixedText() )
+					->rawParams( $link )
+					->parseAsBlock();
+				$out->addHTML( $msg );
+
+				/* ***Replaced***
 				$prevnext = $this->getPrevNext( $prevNumber, $nextNumber );
+				*/
+				$prevnext = $this->getPrevNext( $prevNumber, $nextNumber );
+				// ***Replacement ends***
 				$out->addHTML( $prevnext );
 			}
 		}
@@ -221,8 +271,8 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 
 	/**
 	 * Copied from REL1_32 with modification (marked as ***Message*** below)
-	 * @param int|null $prevNumber
-	 * @param int|null $nextNumber
+	 * @param int|null $prevNumber ***Renamed***
+	 * @param int|null $nextNumber ***Renamed***
 	 * @return string
 	 */
 	function getPrevNext( $prevNumber, $nextNumber ) {
@@ -233,12 +283,22 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		$changed = $this->opts->getChangedValues();
 		unset( $changed['target'] ); // Already in the request title
 
+		/* ***Replaced***
+		if ( 0 != $prevId ) {
+			$overrides = [ 'from' => $this->opts->getValue( 'back' ) ];
+		*/
 		if ( null !== $prevNumber ) {
 			$overrides = [ 'from' => $prevNumber ];
+			// ***Replacement ends***
 			$prev = $this->makeSelfLink( $prev, array_merge( $changed, $overrides ) );
 		}
+		/* ***Replaced***
+		if ( 0 != $nextId ) {
+			$overrides = [ 'from' => $nextId, 'back' => $prevId ];
+		*/
 		if ( 0 != $nextNumber ) {
 			$overrides = [ 'from' => $nextNumber ];
+			// ***Replacement ends***
 			$next = $this->makeSelfLink( $next, array_merge( $changed, $overrides ) );
 		}
 
