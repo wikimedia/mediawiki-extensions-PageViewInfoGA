@@ -4,9 +4,17 @@
  */
 class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 
+	/**
+	 * Copied from REL1_32 with modification (marked as ***Message*** below)
+	 * @param int $level Recursion level
+	 * @param Title $target Target title
+	 * @param int $limit Number of entries to display
+	 * @param int $from Display from this article ID (default: 0)
+	 * @param int $back Display from this article ID at backwards scrolling (default: 0)
+	 */
 	function showIndirectLinks( $level, $target, $limit, $from = 0, $back = 0 ) {
 		$out = $this->getOutput();
-		$dbr = wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB( DB_REPLICA );
 
 		$hidelinks = $this->opts->getValue( 'hidelinks' );
 		$hideredirs = $this->opts->getValue( 'hideredirs' );
@@ -141,23 +149,22 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		}
 
 		// Sort by key and then change the keys to 0-based indices
-
-
-		usort( $rows , function ($a, $b) use ($out) {
-			if(isset($a->page_title) && isset($b->page_title)){
-				return strcasecmp($a->page_title, $b->page_title);
+		usort( $rows, function ( $a, $b ) use ( $out ) {
+			if ( isset( $a->page_title ) && isset( $b->page_title ) ) {
+				return strcasecmp( $a->page_title, $b->page_title );
+			} else {
+				return 0;
 			}
-			else return 0;
 		} );
 		$rows = array_values( $rows );
 
 		$numRows = count( $rows );
 
 		// Work out the start and end IDs, for prev/next links
-		if ( $numRows-$from > $limit ) {
+		if ( $numRows - $from > $limit ) {
 			// More rows available after these ones
 			// Get the ID from the last row in the result set
-			$nextNumber = $from+$limit;
+			$nextNumber = $from + $limit;
 			// Remove undisplayed rows
 			$rows = array_slice( $rows, $from, $limit );
 		} else {
@@ -166,7 +173,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			// Remove undisplayed rows
 			$rows = array_slice( $rows, $from );
 		}
-		$prevNumber = ($from == 0?null:$from-$limit);
+		$prevNumber = $from == 0 ? null : $from - $limit;
 
 		// use LinkBatch to make sure, that all required data (associated with Titles)
 		// is loaded in one query
@@ -212,6 +219,12 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		}
 	}
 
+	/**
+	 * Copied from REL1_32 with modification (marked as ***Message*** below)
+	 * @param int|null $prevNumber
+	 * @param int|null $nextNumber
+	 * @return string
+	 */
 	function getPrevNext( $prevNumber, $nextNumber ) {
 		$currentLimit = $this->opts->getValue( 'limit' );
 		$prev = $this->msg( 'whatlinkshere-prev' )->numParams( $currentLimit )->escaped();
