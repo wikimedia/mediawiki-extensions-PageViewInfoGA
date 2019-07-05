@@ -1,6 +1,6 @@
 <?php
 /*
- * See T4306.
+ * Implement for https://phabricator.wikimedia.org/T4306
  */
 class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 
