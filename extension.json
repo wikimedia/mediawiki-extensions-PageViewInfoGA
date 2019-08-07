@@ -29,7 +29,8 @@
     "SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec",
     "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",
     "SidebarBeforeOutput": "FemiwikiHooks::onSidebarBeforeOutput",
-    "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay"
+    "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay",
+    "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin"
   },
   "MessagesDirs": {
     "UnifiedExtensionForFemiwiki": ["i18n"]
