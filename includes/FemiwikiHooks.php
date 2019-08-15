@@ -100,14 +100,14 @@ EOF;
 
 	/**
 	 * @param LinkRenderer $linkRenderer
-	 * @param Title $target
+	 * @param LinkTarget $target
 	 * @param string &$text
 	 * @param Array &$extraAttribs
 	 * @param Array &$query
 	 * @param string &$ret
 	 * @return bool
 	 */
-	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, Title $target, &$text, &$extraAttribs, &$query, &$ret ) {
+	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, $target, &$text, &$extraAttribs, &$query, &$ret ) {
 		// Do not show edit page when user clicks red link
 		if ( !isset( $query['action'] ) && $target->getNamespace() !== NS_SPECIAL ) {
 			$query['action'] = 'view';
