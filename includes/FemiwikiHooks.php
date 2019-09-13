@@ -109,7 +109,8 @@ EOF;
 	 */
 	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, $target, &$text, &$extraAttribs, &$query, &$ret ) {
 		// Do not show edit page when user clicks red link
-		if ( !isset( $query['action'] ) && $target->getNamespace() !== NS_SPECIAL ) {
+		$title = Title::newFromLinkTarget( $target );
+		if ( !$title->isKnown() ) {
 			$query['action'] = 'view';
 			$query['redlink'] = '1';
 		}
