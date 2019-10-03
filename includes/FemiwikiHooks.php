@@ -17,8 +17,8 @@ class FemiwikiHooks {
 		array_unshift( $template->data['footerlinks']['places'], 'femiwiki-terms-label' );
 
 		// Add Infringement Notification likn.
-		$template->set( 'femiwiki-report-infringement-label', $template->getSkin()->footerLink( 'femiwiki-report-infringement-label', 'femiwiki-report-infringement-page' ) );
-		$template->data['footerlinks']['places'][] = 'femiwiki-report-infringement-label';
+		$template->set( 'femiwiki-support-label', $template->getSkin()->footerLink( 'femiwiki-support-label', 'femiwiki-support-page' ) );
+		$template->data['footerlinks']['places'][] = 'femiwiki-support-label';
 
 		return true;
 	}

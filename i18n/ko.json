@@ -2,7 +2,11 @@
   "@metadata": {
     "authors": []
   },
-  "unifiedextensionforfemiwiki-desc": "페미위키를 위한 여러 기능을 담은 확장기능입니다. [[특수:분류안된분류]], [[특수:가리키는문서]] 특수 문서를 확장합니다.",
+  "unifiedextensionforfemiwiki-desc": "페미위키를 위한 여러 기능을 담은 확장기능입니다. 푸터에 링크를 추가하가 [[특수:분류안된분류]], [[특수:가리키는문서]] 특수 문서를 확장합니다.",
+  "femiwiki-terms-label": "이용약관",
+  "femiwiki-terms-page": "Project:이용약관",
+  "femiwiki-support-label": "문의 창구",
+  "femiwiki-support-page": "Project:문의 창구",
   "unifiedextensionforfemiwiki-createaccount": "아래 보이는 빈 칸에 \"'''나는 페미니스트입니다'''\" 혹은 \"'''I am a feminist'''\"라고 적어주세요 ([[Special:Captcha/help|자세한 정보]]):",
   "unifiedextensionforfemiwiki-createaccount-fail": "\"나는 페미니스트입니다\"라고 올바르게 입력해주세요."
 }
