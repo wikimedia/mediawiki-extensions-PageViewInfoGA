@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"ديفيد"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "امتدادا لفيميويكي، تمديد [[Special:UncategorizedCategories]] و[[Special:WhatLinksHere]] إلخ.",
+	"femiwiki-terms-label": "المصطلحات",
+	"femiwiki-terms-page": "Project:مصطلحات",
+	"femiwiki-support-label": "مكتب الدعم",
+	"femiwiki-support-page": "Project:دعم",
+	"unifiedextensionforfemiwiki-createaccount": "أدخل \"أنا نسوي\" أدناه ([[Special:Captcha/help|مزيد من المعلومات]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "الرجاء إدخال \"أنا نسوي\" في النموذج الأخير"
+}
