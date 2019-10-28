@@ -1,10 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
-			"Ykhwong"
+			"Ykhwong",
+			"렌즈"
 		]
 	},
-	"unifiedextensionforfemiwiki-desc": "페미위키를 위한 여러 기능을 담은 확장기능입니다. 푸터에 링크를 추가하가 [[특수:분류안된분류]], [[특수:가리키는문서]] 특수 문서를 확장합니다.",
+	"unifiedextensionforfemiwiki-desc": "페미위키를 위한 여러 기능을 담은 확장기능입니다. 푸터에 링크를 추가하고 [[특수:분류안된분류]], [[특수:가리키는문서]] 특수 문서를 확장합니다.",
 	"femiwiki-terms-label": "이용약관",
 	"femiwiki-terms-page": "Project:이용약관",
 	"femiwiki-support-label": "문의 창구",

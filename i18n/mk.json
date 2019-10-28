@@ -1,0 +1,15 @@
+{
+	"@metadata": {
+		"authors": [
+			"Bjankuloski06",
+			"Vlad5250"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "додаток за Фемвики. Тука се надополнуваат [[Special:UncategorizedCategories]], [[Special:WhatLinksHere]] и тн.",
+	"femiwiki-terms-label": "Услови",
+	"femiwiki-terms-page": "Project:Услови",
+	"femiwiki-support-label": "Поддршка",
+	"femiwiki-support-page": "Project:Поддршка",
+	"unifiedextensionforfemiwiki-createaccount": "Подолу внесете „I am a feminist“ ([[Special:Captcha/help|повеќе инфо]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Внесете „I am a feminist“ во последниот образец"
+}
