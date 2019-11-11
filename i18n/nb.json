@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jon Harald Søby"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "En utvidelse for femiwiki. Utvider [[Special:UncategorizedCategories]] og [[Special:WhatLinksHere]] osv.",
+	"femiwiki-terms-label": "Vilkår",
+	"femiwiki-terms-page": "Project:Vilkår",
+	"femiwiki-support-label": "Støttesiden",
+	"femiwiki-support-page": "Project:Støtte",
+	"unifiedextensionforfemiwiki-createaccount": "Skriv inn «I am a feminist» nedenfor ([[Special:Captcha/help|mer informasjon]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Skriv inn «I am a feminist» i det siste skjemaet"
+}
