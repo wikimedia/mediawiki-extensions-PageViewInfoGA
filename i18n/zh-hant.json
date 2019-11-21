@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Kly"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "用於 femiwiki 的擴充套件。可擴充 [[Special:UncategorizedCategories]]、[[Special:WhatLinksHere]]、等等其它。",
+	"femiwiki-terms-label": "條款",
+	"femiwiki-terms-page": "Project:條款",
+	"femiwiki-support-label": "服務中心",
+	"femiwiki-support-page": "Project:服務中心",
+	"unifiedextensionforfemiwiki-createaccount": "在下方輸入「I am a feminist」（[[Special:Captcha/help|更多資訊]]）：",
+	"unifiedextensionforfemiwiki-createaccount-fail": "請在最後的表單裡輸入「I am a feminist」"
+}
