@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"BaRaN6161 TURK"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "femiwiki için bir uzantı. [[Special:UncategorizedCategories]] ve [[Special:WhatLinksHere]] vb.",
+	"femiwiki-terms-label": "Koşullar",
+	"femiwiki-terms-page": "Project:Koşullar",
+	"femiwiki-support-label": "Destek masası",
+	"femiwiki-support-page": "Project:Destek",
+	"unifiedextensionforfemiwiki-createaccount": "Aşağıya \"Ben feministim\" ifadesini girin ([[Special:Captcha/help|daha fazla bilgi]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Lütfen son formda \"Ben feministim\" yazınız"
+}
