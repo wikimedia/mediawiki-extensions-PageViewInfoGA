@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Verdy p"
+			"Verdy p",
+			"Thibaut120094"
 		]
 	},
 	"unifiedextensionforfemiwiki-desc": "une extension pour Fémiwiki, qui étend les pages [[Special:UncategorizedCategories|Spécial:Catégories non catégorisées]] et [[Special:WhatLinksHere|Spécial:Pages liées]], etc.",
@@ -9,6 +10,6 @@
 	"femiwiki-terms-page": "Project:Termes",
 	"femiwiki-support-label": "Assistance",
 	"femiwiki-support-page": "Project:Assistance",
-	"unifiedextensionforfemiwiki-createaccount": "Entrez « I am a feminist » ci-dessous ([[Special:Captcha/help|plus d’infos]]) :",
-	"unifiedextensionforfemiwiki-createaccount-fail": "Entrez « I am a feminist » dans le dernier formulaire"
+	"unifiedextensionforfemiwiki-createaccount": "Entrez « I am a feminist » ci-dessous ([[Special:Captcha/help|plus d’infos]]) :",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Entrez « I am a feminist » dans le dernier formulaire"
 }
