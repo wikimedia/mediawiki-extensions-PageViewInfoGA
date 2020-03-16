@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Piramidion"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "Розширення для femiwiki. Розширює [[Special:UncategorizedCategories|Спеціальна:Некатегоризовані категорії]] та [[Special:WhatLinksHere|Спеціальна:Посилання сюди]] тощо.",
+	"femiwiki-terms-label": "Умови",
+	"femiwiki-terms-page": "Project:Умови",
+	"femiwiki-support-label": "Служба підтримки",
+	"femiwiki-support-page": "Project:Підтримка",
+	"unifiedextensionforfemiwiki-createaccount": "Введіть «I am a feminist» нижче ([[Special:Captcha/help|дізнайтесь більше]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Будь ласка, введіть «I am a feminist» в останній формі"
+}
