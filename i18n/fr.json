@@ -1,8 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Verdy p",
-			"Thibaut120094"
+			"Thibaut120094",
+			"Verdy p"
 		]
 	},
 	"unifiedextensionforfemiwiki-desc": "une extension pour Fémiwiki, qui étend les pages [[Special:UncategorizedCategories|Spécial:Catégories non catégorisées]] et [[Special:WhatLinksHere|Spécial:Pages liées]], etc.",
