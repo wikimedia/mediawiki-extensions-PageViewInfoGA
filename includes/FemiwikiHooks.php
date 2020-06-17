@@ -60,7 +60,11 @@ class FemiwikiHooks {
 
 		foreach ( $bar as $heading => $content ) {
 			foreach ( $content as $key => $item ) {
-				if ( isset( $item['href'] ) && strpos( $wgCanonicalServer, parse_url( $item['href'], PHP_URL_HOST ) ) !== false ) {
+				if ( !isset( $item['href'] ) ) {
+					continue;
+				}
+				$href = strval( parse_url( $item['href'], PHP_URL_HOST ) );
+				if ( $href && strpos( $wgCanonicalServer, $href ) !== false ) {
 					unset( $bar[$heading][$key]['rel'] );
 					unset( $bar[$heading][$key]['target'] );
 				}
