@@ -9,6 +9,9 @@ class FemiwikiHooks {
 	/**
 	 * Add Wikibase item link in toolbox
 	 *
+	 * - Wikibase/ClientHooks::onBaseTemplateToolbox (REL1_34)
+	 * - Wikibase\ClientRepoItemLinkGenerator::getNewItemUrl (REL1_34)
+	 *
 	 * @param BaseTemplate $baseTemplate
 	 * @param array[] &$toolbox
 	 */
@@ -25,7 +28,7 @@ class FemiwikiHooks {
 		} elseif ( $title && Action::getActionName( $skin ) !== 'view' && $title->exists() ) {
 			// Try to load the item ID from Database, but only do so on non-article views,
 			// (where the article's OutputPage isn't available to us).
-			$entityId = SkinTemplateOutputPageBeforeExecHandler::getEntityIdForTitle( $title );
+			$entityId = self::getEntityIdForTitle( $title );
 		}
 
 		if ( $entityId === null ) {
@@ -44,6 +47,22 @@ class FemiwikiHooks {
 				'id' => 't-wikibase'
 			];
 		}
+	}
+
+	/**
+	 * Copied from Wikibase/ClientHooks::getEntityIdForTitle (REL1_34)
+	 * @param Title|null $title
+	 * @return EntityId|null
+	 */
+	private static function getEntityIdForTitle( Title $title = null ) {
+		if ( $title === null || !WikibaseClient::getDefaultInstance()->getNamespaceChecker()
+			->isWikibaseEnabled( $title->getNamespace() ) ) {
+			return null;
+		}
+
+		$wikibaseClient = WikibaseClient::getDefaultInstance();
+		$entityIdLookup = $wikibaseClient->getStore()->getEntityIdLookup();
+		return $entityIdLookup->getEntityIdForTitle( $title );
 	}
 
 	/**
