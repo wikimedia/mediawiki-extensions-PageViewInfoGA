@@ -26,11 +26,12 @@
     }
   },
   "Hooks": {
-    "SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec",
+    "BaseTemplateToolbox":  "FemiwikiHooks::onBaseTemplateToolbox",
+    "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay",
+    "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin",
     "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",
     "SidebarBeforeOutput": "FemiwikiHooks::onSidebarBeforeOutput",
-    "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay",
-    "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin"
+    "SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec"
   },
   "MessagesDirs": {
     "UnifiedExtensionForFemiwiki": ["i18n"]

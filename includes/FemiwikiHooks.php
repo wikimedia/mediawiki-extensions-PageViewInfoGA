@@ -1,8 +1,50 @@
 <?php
 
 use MediaWiki\Linker\LinkRenderer;
+use Wikibase\Client\WikibaseClient;
+use Wikibase\Client\Hooks\SkinTemplateOutputPageBeforeExecHandler;
 
 class FemiwikiHooks {
+
+	/**
+	 * Add Wikibase item link in toolbox
+	 *
+	 * @param BaseTemplate $baseTemplate
+	 * @param array[] &$toolbox
+	 */
+	public static function onBaseTemplateToolbox( BaseTemplate $baseTemplate, array &$toolbox ) {
+		$wikibaseClient = WikibaseClient::getDefaultInstance();
+		$skin = $baseTemplate->getSkin();
+		$title = $skin->getTitle();
+		$idString = $skin->getOutput()->getProperty( 'wikibase_item' );
+		$entityId = null;
+
+		if ( $idString !== null ) {
+			$entityIdParser = $wikibaseClient->getEntityIdParser();
+			$entityId = $entityIdParser->parse( $idString );
+		} elseif ( $title && Action::getActionName( $skin ) !== 'view' && $title->exists() ) {
+			// Try to load the item ID from Database, but only do so on non-article views,
+			// (where the article's OutputPage isn't available to us).
+			$entityId = SkinTemplateOutputPageBeforeExecHandler::getEntityIdForTitle( $title );
+		}
+
+		if ( $entityId === null ) {
+			$params = [
+				'site' => $wikibaseClient->getSettings()->getSetting( 'siteGlobalID' ),
+				'page' => $title->getPrefixedText()
+			];
+
+			$repoLinker = $wikibaseClient->newRepoLinker();
+			$url = $repoLinker->getPageUrl( 'Special:NewItem' );
+			$url = $repoLinker->addQueryParams( $url, $params );
+
+			$toolbox['wikibase'] = [
+				'text' => $baseTemplate->getMsg( 'wikibase-dataitem' )->text(),
+				'href' => $url,
+				'id' => 't-wikibase'
+			];
+		}
+	}
 
 	/**
 	 * Add a few links to the footer.
