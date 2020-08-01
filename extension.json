@@ -31,7 +31,7 @@
     "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin",
     "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",
     "SidebarBeforeOutput": "FemiwikiHooks::onSidebarBeforeOutput",
-    "SkinTemplateOutputPageBeforeExec": "FemiwikiHooks::onSkinTemplateOutputPageBeforeExec"
+    "SkinAddFooterLinks": "FemiwikiHooks::onSkinAddFooterLinks"
   },
   "MessagesDirs": {
     "UnifiedExtensionForFemiwiki": ["i18n"]

@@ -67,18 +67,22 @@ class FemiwikiHooks {
 	/**
 	 * Add a few links to the footer.
 	 *
-	 * @param SkinTemplate &$skin
-	 * @param QuickTemplate &$template
+	 * @param Skin $skin
+	 * @param string $key
+	 * @param array &$footerlinks
 	 * @return bool Sends a line to the debug log if false.
 	 */
-	public static function onSkinTemplateOutputPageBeforeExec( &$skin, &$template ) {
-		// Add Terms link to the front.
-		$template->set( 'femiwiki-terms-label', $template->getSkin()->footerLink( 'femiwiki-terms-label', 'femiwiki-terms-page' ) );
-		array_unshift( $template->data['footerlinks']['places'], 'femiwiki-terms-label' );
+	public static function onSkinAddFooterLinks( Skin $skin, string $key, array &$footerlinks ) {
+		if ( $key !== 'places' ) {
+			return;
+		}
 
-		// Add Infringement Notification likn.
-		$template->set( 'femiwiki-support-label', $template->getSkin()->footerLink( 'femiwiki-support-label', 'femiwiki-support-page' ) );
-		$template->data['footerlinks']['places'][] = 'femiwiki-support-label';
+		$footerlinks =
+			// Prepend terms link
+			[ 'femiwiki-terms-label' => $skin->footerLink( 'femiwiki-terms-label', 'femiwiki-terms-page' ) ] +
+			$footerlinks +
+			// Append Infringement Notification link
+			[ 'femiwiki-support-label' => $skin->footerLink( 'femiwiki-support-label', 'femiwiki-support-page' ) ];
 
 		return true;
 	}
