@@ -2,7 +2,6 @@
 
 use MediaWiki\Linker\LinkRenderer;
 use Wikibase\Client\WikibaseClient;
-use Wikibase\Client\Hooks\SkinTemplateOutputPageBeforeExecHandler;
 
 class FemiwikiHooks {
 

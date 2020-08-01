@@ -4,6 +4,7 @@ use MediaWiki\Auth\AuthenticationRequest;
 
 class FemiwikiAuthenticationRequest extends AuthenticationRequest {
 	public $femiwikiOpenSesame;
+
 	/**
 	 * @see AuthenticationRequest::getFieldInfo()
 	 * @return array

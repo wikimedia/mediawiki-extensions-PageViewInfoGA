@@ -41,7 +41,7 @@ class FemiwikiPreAuthenticationProvider extends AbstractPreAuthenticationProvide
 	}
 
 	/**
-	 * @param $phrase
+	 * @param string $phrase
 	 * @return bool
 	 */
 	private static function testInternal( $phrase ) {
