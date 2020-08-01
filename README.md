@@ -5,7 +5,6 @@
 - 사이트 푸터에 이용약관과 권리 침해 신고를 추가
 - 문서 내용과 사이드바에서 `https://femiwiki.com`로 시작하는 링크, 혹은 사이트에 설정에 따라 같은 도메인으로 시작하는 링크를 내부 링크처럼 표시
 - 모든 문서에 구글 태그 매니저 스크립트 추가
-- [[특수:분류안된분류]]를 분류 트리로 표시
 - [[특:가리키는문서]]의 문서들을 가나다순으로 표시
 
 # 설치
@@ -13,7 +12,6 @@
 2) LocalSettings.php에 다음을 추가하십시오. `$wgGoogleAnalyticsTrackingID`을 설정하지 않으면 구글 태그 매니저는 활성화되지 않습니다.
 ```php
 wfLoadExtension( 'UnifiedExtensionForFemiwiki' );
-$wgSpecialPages['Uncategorizedcategories'] = 'SpecialUncategorizedCategoryTree';
 $wgSpecialPages['Whatlinkshere'] = 'SpecialOrderedWhatlinkshere';
 $wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
 ```

@@ -13,7 +13,6 @@
     }
   },
   "AutoloadClasses": {
-    "SpecialUncategorizedCategoryTree": "specials/SpecialUncategorizedCategoryTree.php",
     "SpecialOrderedWhatlinkshere": "specials/SpecialOrderedWhatlinkshere.php",
     "FemiwikiHooks": "includes/FemiwikiHooks.php",
     "FemiwikiAuthenticationRequest": "includes/FemiwikiAuthenticationRequest.php",
