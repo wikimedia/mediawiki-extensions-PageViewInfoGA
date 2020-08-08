@@ -26,7 +26,6 @@
     }
   },
   "Hooks": {
-    "BaseTemplateToolbox":  "FemiwikiHooks::onBaseTemplateToolbox",
     "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay",
     "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin",
     "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",

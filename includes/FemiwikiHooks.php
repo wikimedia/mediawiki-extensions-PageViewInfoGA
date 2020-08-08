@@ -1,68 +1,10 @@
 <?php
 
 use MediaWiki\Linker\LinkRenderer;
+use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
 
 class FemiwikiHooks {
-
-	/**
-	 * Add Wikibase item link in toolbox
-	 *
-	 * - Wikibase/ClientHooks::onBaseTemplateToolbox (REL1_34)
-	 * - Wikibase\ClientRepoItemLinkGenerator::getNewItemUrl (REL1_34)
-	 *
-	 * @param BaseTemplate $baseTemplate
-	 * @param array[] &$toolbox
-	 */
-	public static function onBaseTemplateToolbox( BaseTemplate $baseTemplate, array &$toolbox ) {
-		$wikibaseClient = WikibaseClient::getDefaultInstance();
-		$skin = $baseTemplate->getSkin();
-		$title = $skin->getTitle();
-		$idString = $skin->getOutput()->getProperty( 'wikibase_item' );
-		$entityId = null;
-
-		if ( $idString !== null ) {
-			$entityIdParser = $wikibaseClient->getEntityIdParser();
-			$entityId = $entityIdParser->parse( $idString );
-		} elseif ( $title && Action::getActionName( $skin ) !== 'view' && $title->exists() ) {
-			// Try to load the item ID from Database, but only do so on non-article views,
-			// (where the article's OutputPage isn't available to us).
-			$entityId = self::getEntityIdForTitle( $title );
-		}
-
-		if ( $entityId === null ) {
-			$params = [
-				'site' => $wikibaseClient->getSettings()->getSetting( 'siteGlobalID' ),
-				'page' => $title->getPrefixedText()
-			];
-
-			$repoLinker = $wikibaseClient->newRepoLinker();
-			$url = $repoLinker->getPageUrl( 'Special:NewItem' );
-			$url = $repoLinker->addQueryParams( $url, $params );
-
-			$toolbox['wikibase'] = [
-				'text' => $baseTemplate->getMsg( 'wikibase-dataitem' )->text(),
-				'href' => $url,
-				'id' => 't-wikibase'
-			];
-		}
-	}
-
-	/**
-	 * Copied from Wikibase/ClientHooks::getEntityIdForTitle (REL1_34)
-	 * @param Title|null $title
-	 * @return EntityId|null
-	 */
-	private static function getEntityIdForTitle( Title $title = null ) {
-		if ( $title === null || !WikibaseClient::getDefaultInstance()->getNamespaceChecker()
-			->isWikibaseEnabled( $title->getNamespace() ) ) {
-			return null;
-		}
-
-		$wikibaseClient = WikibaseClient::getDefaultInstance();
-		$entityIdLookup = $wikibaseClient->getStore()->getEntityIdLookup();
-		return $entityIdLookup->getEntityIdForTitle( $title );
-	}
 
 	/**
 	 * Add a few links to the footer.
@@ -98,9 +40,8 @@ class FemiwikiHooks {
 	 * @return bool
 	 */
 	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
-		global $wgCanonicalServer;
-
-		if ( strpos( $wgCanonicalServer, parse_url( $url, PHP_URL_HOST ) ) === false ) {
+		$canonicalServer = RequestContext::getMain()->getConfig()->get( 'CanonicalServer' );
+		if ( strpos( $canonicalServer, parse_url( $url, PHP_URL_HOST ) ) === false ) {
 			return true;
 		}
 
@@ -113,14 +54,56 @@ class FemiwikiHooks {
 	}
 
 	/**
-	 * Treat external links to FemiWiki as internal links in the Sidebar.
+	 * @param Skin $skin
+	 * @param array &$sidebar Sidebar content. Modify $sidebar to add or modify sidebar portlets.
+	 * @return void This hook must not abort; it must not return value.
+	 */
+	public static function onSidebarBeforeOutput( Skin $skin, &$sidebar ): void {
+		self::addWikibaseNewItemLink( $skin, $sidebar );
+		self::sidebarConvertLinks( $sidebar );
+	}
+
+	/**
+	 * Add a link to create new Wikibase item in toolbox when the title is not linked with any item.
+	 *
+	 * - Wikibase\Client\Hooks\SidebarHookHandler::onSidebarBeforeOutput (REL1_35)
+	 * - Wikibase\Client\ClientHooks::onBaseTemplateToolbox (REL1_35)
+	 * - Wikibase\Client\RepoItemLinkGenerator::getNewItemUrl (REL1_35)
 	 *
 	 * @param Skin $skin
 	 * @param Array &$bar
-	 * @return bool
+	 * @return void
 	 */
-	public static function onSidebarBeforeOutput( Skin $skin, &$bar ) {
-		global $wgCanonicalServer;
+	private static function addWikibaseNewItemLink( Skin $skin, &$bar ): void {
+		if ( ClientHooks::buildWikidataItemLink( $skin ) ) {
+			return;
+		}
+		$title = $skin->getTitle();
+		$wbClient = WikibaseClient::getDefaultInstance();
+		$repoLinker = $wbClient->newRepoLinker();
+
+		$params = [
+			'site' => $wbClient->getSettings()->getSetting( 'siteGlobalID' ),
+			'page' => $title->getPrefixedText()
+		];
+
+		$url = $repoLinker->getPageUrl( 'Special:NewItem' );
+		$url = $repoLinker->addQueryParams( $url, $params );
+
+		$bar['TOOLBOX']['wikibase'] = [
+			'text' => $skin->msg( 'wikibase-dataitem' )->text(),
+			'href' => $url,
+			'id' => 't-wikibase'
+		];
+	}
+
+	/**
+	 * Treat external links to FemiWiki as internal links in the Sidebar.
+	 * @param Array &$bar
+	 * @return void
+	 */
+	private static function sidebarConvertLinks( &$bar ): void {
+		$canonicalServer = RequestContext::getMain()->getConfig()->get( 'CanonicalServer' );
 
 		foreach ( $bar as $heading => $content ) {
 			foreach ( $content as $key => $item ) {
@@ -128,13 +111,12 @@ class FemiwikiHooks {
 					continue;
 				}
 				$href = strval( parse_url( $item['href'], PHP_URL_HOST ) );
-				if ( $href && strpos( $wgCanonicalServer, $href ) !== false ) {
+				if ( $href && strpos( $canonicalServer, $href ) !== false ) {
 					unset( $bar[$heading][$key]['rel'] );
 					unset( $bar[$heading][$key]['target'] );
 				}
 			}
 		}
-		return true;
 	}
 
 	/**
