@@ -403,4 +403,122 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 
 		return $this->msg( 'viewprevnext' )->rawParams( $prev, $next, $nums )->escaped();
 	}
+
+	/**
+	 * Copied from REL1_35
+	 * @return string
+	 */
+	private function whatlinkshereForm() {
+		// We get nicer value from the title object
+		$this->opts->consumeValue( 'target' );
+		// Reset these for new requests
+		$this->opts->consumeValues( [ 'back', 'from' ] );
+
+		$target = $this->target ? $this->target->getPrefixedText() : '';
+		$namespace = $this->opts->consumeValue( 'namespace' );
+		$nsinvert = $this->opts->consumeValue( 'invert' );
+
+		# Build up the form
+		$f = Xml::openElement( 'form', [ 'action' => wfScript() ] );
+
+		# Values that should not be forgotten
+		$f .= Html::hidden( 'title', $this->getPageTitle()->getPrefixedText() );
+		foreach ( $this->opts->getUnconsumedValues() as $name => $value ) {
+			$f .= Html::hidden( $name, $value );
+		}
+
+		$f .= Xml::fieldset( $this->msg( 'whatlinkshere' )->text() );
+
+		# Target input (.mw-searchInput enables suggestions)
+		$f .= Xml::inputLabel( $this->msg( 'whatlinkshere-page' )->text(), 'target',
+			'mw-whatlinkshere-target', 40, $target, [ 'class' => 'mw-searchInput' ] );
+
+		$f .= ' ';
+
+		# Namespace selector
+		$f .= Html::namespaceSelector(
+			[
+				'selected' => $namespace,
+				'all' => '',
+				'label' => $this->msg( 'namespace' )->text(),
+				'in-user-lang' => true,
+			], [
+				'name' => 'namespace',
+				'id' => 'namespace',
+				'class' => 'namespaceselector',
+			]
+		);
+
+		$f .= "\u{00A0}" .
+			Xml::checkLabel(
+				$this->msg( 'invert' )->text(),
+				'invert',
+				'nsinvert',
+				$nsinvert,
+				[ 'title' => $this->msg( 'tooltip-whatlinkshere-invert' )->text() ]
+			);
+
+		$f .= ' ';
+
+		# Submit
+		$f .= Xml::submitButton( $this->msg( 'whatlinkshere-submit' )->text() );
+
+		# Close
+		$f .= Xml::closeElement( 'fieldset' ) . Xml::closeElement( 'form' ) . "\n";
+
+		return $f;
+	}
+
+	/**
+	 * Copied from REL1_35
+	 * @return string
+	 */
+	private function getFilterPanel() {
+		$show = $this->msg( 'show' )->escaped();
+		$hide = $this->msg( 'hide' )->escaped();
+
+		$changed = $this->opts->getChangedValues();
+		unset( $changed['target'] );
+
+		$links = [];
+		$types = [ 'hidetrans', 'hidelinks', 'hideredirs' ];
+		if ( $this->target->getNamespace() == NS_FILE ) {
+			$types[] = 'hideimages';
+		}
+
+		// Combined message keys: 'whatlinkshere-hideredirs', 'whatlinkshere-hidetrans',
+		// 'whatlinkshere-hidelinks', 'whatlinkshere-hideimages'
+		// To be sure they will be found by grep
+		foreach ( $types as $type ) {
+			$chosen = $this->opts->getValue( $type );
+			$msg = $chosen ? $show : $hide;
+			$overrides = [ $type => !$chosen ];
+			$links[] = $this->msg( "whatlinkshere-{$type}" )->rawParams(
+				$this->makeSelfLink( $msg, array_merge( $changed, $overrides ) ) )->escaped();
+		}
+
+		return Xml::fieldset(
+			$this->msg( 'whatlinkshere-filters' )->text(),
+			$this->getLanguage()->pipeList( $links )
+		);
+	}
+
+	/**
+	 * Copied from REL1_35
+	 * @param string|null $text
+	 * @param string $query
+	 * @return string
+	 */
+	private function makeSelfLink( $text, $query ) {
+		if ( $text !== null ) {
+			$text = new HtmlArmor( $text );
+		}
+
+		return $this->getLinkRenderer()->makeKnownLink(
+			$this->selfTitle,
+			$text,
+			[],
+			$query
+		);
+	}
 }
