@@ -38,9 +38,12 @@ class FemiwikiHooks {
 	 * @param string &$link
 	 * @param string[] &$attribs
 	 * @param string $linktype
-	 * @return bool|void
+	 * @return bool|void True or no return value to continue or false to abort
 	 */
 	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
+		if ( defined( 'MW_PHPUNIT_TEST' ) ) {
+			return true;
+		}
 		$canonicalServer = RequestContext::getMain()->getConfig()->get( 'CanonicalServer' );
 		if ( strpos( $canonicalServer, parse_url( $url, PHP_URL_HOST ) ) === false ) {
 			return true;
