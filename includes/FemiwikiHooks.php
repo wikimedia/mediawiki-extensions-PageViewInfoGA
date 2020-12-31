@@ -1,6 +1,7 @@
 <?php
 
 use MediaWiki\Linker\LinkRenderer;
+use MediaWiki\Linker\LinkTarget;
 use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
 
@@ -16,7 +17,7 @@ class FemiwikiHooks {
 	 */
 	public static function onSkinAddFooterLinks( Skin $skin, string $key, array &$footerlinks ) {
 		if ( $key !== 'places' ) {
-			return;
+			return true;
 		}
 
 		$footerlinks =
@@ -35,9 +36,9 @@ class FemiwikiHooks {
 	 * @param string &$url
 	 * @param string &$text
 	 * @param string &$link
-	 * @param string &$attribs
+	 * @param string[] &$attribs
 	 * @param string $linktype
-	 * @return bool
+	 * @return bool|void
 	 */
 	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
 		$canonicalServer = RequestContext::getMain()->getConfig()->get( 'CanonicalServer' );
@@ -157,7 +158,7 @@ EOF;
 	 * @param string &$ret
 	 * @return bool
 	 */
-	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, $target, &$text, &$extraAttribs, &$query, &$ret ) {
+	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, LinkTarget $target, &$text, &$extraAttribs, &$query, &$ret ) {
 		// Do not show edit page when user clicks red link
 		$title = Title::newFromLinkTarget( $target );
 		if ( !$title->isKnown() ) {
