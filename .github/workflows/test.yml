@@ -139,7 +139,9 @@ jobs:
           mkdir -p cache cover
           chmod 777 src cache cover
           sudo chown -R nobody:nogroup src
-          sudo chown $(id -u):$(id -g) src cache
+          sudo chown $(id -u):$(id -g) src
+          # https://github.com/femiwiki/.github/issues/3
+          sudo -r $(id -u):$(id -g) cache
           # Composer install
           if [ "${{ matrix.stage }}" == 'phan' ] || [ "${{ matrix.stage }}" == 'coverage' ]; then
             docker run \
