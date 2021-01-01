@@ -8,6 +8,13 @@ name: Quibble and Phan
 
 on:
   push:
+    branches:
+      - master
+      - master-*
+      - REL*_*
+      - REL*_*-*
+    tags-ignore:
+      - '*.*'
   pull_request:
 
 env:
@@ -45,16 +52,19 @@ jobs:
       # $GITHUB_WORKSPACE/.github/workflows/.test-env  Used by actions/cache
       - name: Set up
         run: |
-          if [ -e .github/workflows/.test-env ]; then
-            source .github/workflows/.test-env
-            echo "DEPENDENCIES=${DEPENDENCIES}" >> $GITHUB_ENV
-          fi
-
-          if [ "${GITHUB_EVENT_NAME}" == 'push' ]; then
-            echo "MEDIAWIKI_VERSION=$(echo $GITHUB_REF | cut -d'/' -f3 | cut -d'-' -f1)" >> $GITHUB_ENV
+          # Export the target version of MediaWiki
+          # An example of GITHUB_REF: refs/heads/feature-branch-1
+          BRANCH_NAME=$(echo "$GITHUB_REF" | cut -d'/' -f3 | cut -d'-' -f1)
+          BASE_BRANCH_NAME=$(echo "$GITHUB_BASE_REF" | cut -d'/' -f3)
+          if [[ "$BRANCH_NAME" =~ ^master|REL\d_\d+$ ]]; then
+            # branch name starts with the version (ex: master-new-feature, REL1_34-bug-fix)
+            export MEDIAWIKI_VERSION="$BRANCH_NAME"
+          elif [ "$GITHUB_EVENT_NAME" == 'pull_request' ] && [[ "$BASE_BRANCH_NAME" =~ ^master|REL\d_\d+$ ]]; then
+            export MEDIAWIKI_VERSION="$BASE_BRANCH_NAME"
           else
-            echo MEDIAWIKI_VERSION=master >> $GITHUB_ENV
+            export MEDIAWIKI_VERSION=master
           fi
+          echo MEDIAWIKI_VERSION="${MEDIAWIKI_VERSION}" >> $GITHUB_ENV
 
           if [ "${{ matrix.stage }}" == 'phan' ]; then
             export DOCKER_IMAGE="${PHAN_DOCKER_IMAGE}"
@@ -76,6 +86,11 @@ jobs:
               grep -v latest | sort -Vr | head -1)" >> $GITHUB_ENV
           elif [ "${{ matrix.stage }}" == 'coverage' ]; then
             echo "QUIBBLE_DOCKER_LATEST_TAG=${DOCKER_LATEST_TAG}" >> $GITHUB_ENV
+          fi
+
+          if [ -e .github/workflows/.test-env ]; then
+            source .github/workflows/.test-env
+            echo "DEPENDENCIES=${DEPENDENCIES}" >> $GITHUB_ENV
           fi
 
       - name: Cache docker image
