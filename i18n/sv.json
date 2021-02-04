@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Sabelöga"
+		]
+	},
+	"unifiedextensionforfemiwiki-desc": "ett tillägg för femiwiki. Utökar [[Special:UncategorizedCategories]] och [[Special:WhatLinksHere]] osv.",
+	"femiwiki-terms-label": "Termer",
+	"femiwiki-terms-page": "Project:Termer",
+	"femiwiki-support-label": "Helpdesk",
+	"femiwiki-support-page": "Project:Stöd",
+	"unifiedextensionforfemiwiki-createaccount": "Skriv \"I am a feminist\" nedan ([[Special:Captcha/help|mer informarion]]):",
+	"unifiedextensionforfemiwiki-createaccount-fail": "Skriv \"I am a feminist\" i det sista formuläret"
+}
