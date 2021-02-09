@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Eduardo Addad de Oliveira"
+			"Eduardo Addad de Oliveira",
+			"Eduardoaddad"
 		]
 	},
 	"unifiedextensionforfemiwiki-desc": "uma extensão para femiwiki. Estender o [[Special:UncategorizedCategories]] e [[Special:WhatLinksHere]] etc.",
