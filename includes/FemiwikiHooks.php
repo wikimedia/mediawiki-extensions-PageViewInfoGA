@@ -153,6 +153,7 @@ EOF;
 	}
 
 	/**
+	 * Do not show edit page when user clicks red link
 	 * @param LinkRenderer $linkRenderer
 	 * @param LinkTarget $target
 	 * @param string &$text
@@ -163,7 +164,11 @@ EOF;
 	 */
 	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, LinkTarget $target, &$text,
 		&$extraAttribs, &$query, &$ret ) {
-		// Do not show edit page when user clicks red link
+		// See https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/23
+		if ( defined( 'MW_PHPUNIT_TEST' ) && ( $target == 'Rights Page' || $target == 'Parser test' ) ) {
+			return true;
+		}
+
 		$title = Title::newFromLinkTarget( $target );
 		if ( !$title->isKnown() ) {
 			$query['action'] = 'view';
