@@ -161,7 +161,8 @@ EOF;
 	 * @param string &$ret
 	 * @return bool
 	 */
-	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, LinkTarget $target, &$text, &$extraAttribs, &$query, &$ret ) {
+	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, LinkTarget $target, &$text,
+		&$extraAttribs, &$query, &$ret ) {
 		// Do not show edit page when user clicks red link
 		$title = Title::newFromLinkTarget( $target );
 		if ( !$title->isKnown() ) {
