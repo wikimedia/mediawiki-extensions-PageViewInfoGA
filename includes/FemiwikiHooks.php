@@ -84,7 +84,7 @@ class FemiwikiHooks {
 		}
 		$title = $skin->getTitle();
 		$wbClient = WikibaseClient::getDefaultInstance();
-		$repoLinker = $wbClient->newRepoLinker();
+		$repoLinker = WikibaseClient::getRepoLinker();
 
 		$params = [
 			'site' => $wbClient->getSettings()->getSetting( 'siteGlobalID' ),
