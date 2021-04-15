@@ -160,7 +160,9 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 				->fields( [ 'page_id', 'page_namespace', 'page_title',
 					'rd_from', 'rd_fragment', 'page_is_redirect' ] )
 				->orderBy( 'page_id' )
+				/* ***Replaced***
 				->limit( $queryLimit )
+				*/
 				->caller( __CLASS__ . '::showIndirectLinks' )
 				->fetchResultSet();
 		};
