@@ -75,7 +75,7 @@ class FemiwikiHooks {
 	 * - Wikibase\Client\RepoItemLinkGenerator::getNewItemUrl (REL1_35)
 	 *
 	 * @param Skin $skin
-	 * @param Array &$bar
+	 * @param array &$bar
 	 * @return void
 	 */
 	private static function addWikibaseNewItemLink( Skin $skin, &$bar ): void {
@@ -103,7 +103,7 @@ class FemiwikiHooks {
 
 	/**
 	 * Treat external links to FemiWiki as internal links in the Sidebar.
-	 * @param Array &$bar
+	 * @param array &$bar
 	 * @return void
 	 */
 	private static function sidebarConvertLinks( &$bar ): void {
@@ -157,8 +157,8 @@ EOF;
 	 * @param LinkRenderer $linkRenderer
 	 * @param LinkTarget $target
 	 * @param string &$text
-	 * @param Array &$extraAttribs
-	 * @param Array &$query
+	 * @param array &$extraAttribs
+	 * @param array &$query
 	 * @param string &$ret
 	 * @return bool
 	 */

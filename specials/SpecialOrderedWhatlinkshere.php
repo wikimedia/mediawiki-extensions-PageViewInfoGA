@@ -378,7 +378,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		if ( $prevId != 0 ) {
 			$overrides = [ 'from' => $this->opts->getValue( 'back' ) ];
 		*/
-		if ( null !== $prevNumber ) {
+		if ( $prevNumber !== null ) {
 			$overrides = [ 'from' => $prevNumber ];
 			// ***Replacement ends***
 			$prev = $this->makeSelfLink( $prev, array_merge( $changed, $overrides ) );
@@ -387,7 +387,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		if ( $nextId != 0 ) {
 			$overrides = [ 'from' => $nextId, 'back' => $prevId ];
 		*/
-		if ( 0 != $nextNumber ) {
+		if ( $nextNumber != 0 ) {
 			$overrides = [ 'from' => $nextNumber ];
 			// ***Replacement ends***
 			$next = $this->makeSelfLink( $next, array_merge( $changed, $overrides ) );

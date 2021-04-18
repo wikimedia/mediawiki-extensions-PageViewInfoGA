@@ -3,6 +3,7 @@
 use MediaWiki\Auth\AuthenticationRequest;
 
 class FemiwikiAuthenticationRequest extends AuthenticationRequest {
+	/** @var string */
 	public $femiwikiOpenSesame;
 
 	/**
