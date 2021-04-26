@@ -332,7 +332,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			/* ***Replaced***
 			$prevnext = $this->getPrevNext( $prevId, $nextId );
 			*/
-			$prevnext = $this->getPrevNext( $prevNumber, $nextNumber );
+			$prevnext = $this->getPrevNext( $prevNumber, $nextNumber ?? null );
 				// ***Replacement ends**
 			$out->addHTML( $prevnext );
 		}
