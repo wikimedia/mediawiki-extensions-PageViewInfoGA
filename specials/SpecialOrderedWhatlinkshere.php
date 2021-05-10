@@ -129,7 +129,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 			$conds['pagelinks']['rd_from'] = null;
 		}
 
-		$queryFunc = function ( IDatabase $dbr, $table, $fromCol ) use (
+		$queryFunc = static function ( IDatabase $dbr, $table, $fromCol ) use (
 			$conds, $target, $limit
 		) {
 			// Read an extra row as an at-end check
@@ -258,7 +258,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		/* ***Replaced***
 		ksort( $rows );
 		*/
-		usort( $rows, function ( $a, $b ) {
+		usort( $rows, static function ( $a, $b ) {
 			if ( isset( $a->page_title ) && isset( $b->page_title ) ) {
 				return strcasecmp( $a->page_title, $b->page_title );
 			} else {
