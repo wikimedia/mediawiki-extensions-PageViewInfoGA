@@ -15,7 +15,16 @@
 
 ```php
 wfLoadExtension( 'UnifiedExtensionForFemiwiki' );
-$wgSpecialPages['Whatlinkshere'] = 'SpecialOrderedWhatlinkshere';
+$wgSpecialPages['Whatlinkshere'] = [
+	'class' => 'SpecialOrderedWhatLinksHere',
+	'services' => [
+		'DBLoadBalancer',
+		'LinkBatchFactory',
+		'ContentHandlerFactory',
+		'SearchEngineFactory',
+		'NamespaceInfo',
+	]
+];
 $wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
 ```
 
