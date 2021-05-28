@@ -13,7 +13,7 @@
     }
   },
   "AutoloadClasses": {
-    "SpecialOrderedWhatlinkshere": "specials/SpecialOrderedWhatlinkshere.php",
+    "SpecialOrderedWhatLinksHere": "specials/SpecialOrderedWhatLinksHere.php",
     "FemiwikiHooks": "includes/FemiwikiHooks.php",
     "FemiwikiAuthenticationRequest": "includes/FemiwikiAuthenticationRequest.php",
     "FemiwikiPreAuthenticationProvider": "includes/FemiwikiPreAuthenticationProvider.php"
@@ -31,6 +31,18 @@
     "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",
     "SidebarBeforeOutput": "FemiwikiHooks::onSidebarBeforeOutput",
     "SkinAddFooterLinks": "FemiwikiHooks::onSkinAddFooterLinks"
+  },
+  "SpecialPages": {
+    "OrderedWhatlinkshere": {
+      "class": "SpecialOrderedWhatLinksHere",
+      "services": [
+        "DBLoadBalancer",
+        "LinkBatchFactory",
+        "ContentHandlerFactory",
+        "SearchEngineFactory",
+        "NamespaceInfo"
+      ]
+    }
   },
   "MessagesDirs": {
     "UnifiedExtensionForFemiwiki": ["i18n"]

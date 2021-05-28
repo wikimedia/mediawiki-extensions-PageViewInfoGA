@@ -1,11 +1,14 @@
 <?php
+
+use Wikimedia\Rdbms\ILoadBalancer;
+
 /**
  * Implement for https://phabricator.wikimedia.org/T4306
  */
-class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
+class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 
 	/**
-	 * Copied from REL1_35 without modification to replace private function showIndirectLinks.
+	 * Copied from REL1_36 without modification to replace private function showIndirectLinks.
 	 *
 	 * @param string $par
 	 */
@@ -65,7 +68,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 	}
 
 	/**
-	 * Copied from REL1_35 with modification (marked as ***Message*** below)
+	 * Copied from REL1_36 with modification (marked as ***Message*** below)
 	 * @param int $level Recursion level
 	 * @param Title $target Target title
 	 * @param int $limit Number of entries to display
@@ -74,12 +77,12 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 	 */
 	private function showIndirectLinks( $level, $target, $limit, $from = 0, $back = 0 ) {
 		$out = $this->getOutput();
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = $this->loadBalancer->getConnectionRef( ILoadBalancer::DB_REPLICA );
 
 		$hidelinks = $this->opts->getValue( 'hidelinks' );
 		$hideredirs = $this->opts->getValue( 'hideredirs' );
 		$hidetrans = $this->opts->getValue( 'hidetrans' );
-		$hideimages = $target->getNamespace() != NS_FILE || $this->opts->getValue( 'hideimages' );
+		$hideimages = $target->getNamespace() !== NS_FILE || $this->opts->getValue( 'hideimages' );
 
 		// For historical reasons `pagelinks` always contains an entry for the redirect target.
 		// So we only need to query `redirect` if `pagelinks` isn't being queried.
@@ -104,13 +107,20 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		];
 
 		$namespace = $this->opts->getValue( 'namespace' );
-		$invert = $this->opts->getValue( 'invert' );
-		$nsComparison = ( $invert ? '!= ' : '= ' ) . $dbr->addQuotes( $namespace );
 		if ( is_int( $namespace ) ) {
-			$conds['redirect'][] = "page_namespace $nsComparison";
-			$conds['pagelinks'][] = "pl_from_namespace $nsComparison";
-			$conds['templatelinks'][] = "tl_from_namespace $nsComparison";
-			$conds['imagelinks'][] = "il_from_namespace $nsComparison";
+			$invert = $this->opts->getValue( 'invert' );
+			if ( $invert ) {
+				// Select all namespaces except for the specified one.
+				// This allows the database to use the *_from_namespace index. (T241837)
+				$namespaces = array_diff(
+					$this->namespaceInfo->getValidNamespaces(), [ $namespace ] );
+			} else {
+				$namespaces = $namespace;
+			}
+			$conds['redirect']['page_namespace'] = $namespaces;
+			$conds['pagelinks']['pl_from_namespace'] = $namespaces;
+			$conds['templatelinks']['tl_from_namespace'] = $namespaces;
+			$conds['imagelinks']['il_from_namespace'] = $namespaces;
 		}
 
 		/* ***Removed***
@@ -304,7 +314,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 
 		// use LinkBatch to make sure, that all required data (associated with Titles)
 		// is loaded in one query
-		$lb = new LinkBatch();
+		$lb = $this->linkBatchFactory->newLinkBatch();
 		foreach ( $rows as $row ) {
 			$lb->add( $row->page_namespace, $row->page_title );
 		}
@@ -368,8 +378,8 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 	 */
 	private function getPrevNext( $prevNumber, $nextNumber ) {
 		$currentLimit = $this->opts->getValue( 'limit' );
-		$prev = $this->msg( 'whatlinkshere-prev' )->numParams( $currentLimit )->escaped();
-		$next = $this->msg( 'whatlinkshere-next' )->numParams( $currentLimit )->escaped();
+		$prev = $this->msg( 'whatlinkshere-prev' )->numParams( $currentLimit )->text();
+		$next = $this->msg( 'whatlinkshere-next' )->numParams( $currentLimit )->text();
 
 		$changed = $this->opts->getChangedValues();
 		unset( $changed['target'] );
@@ -381,7 +391,7 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		if ( $prevNumber !== null ) {
 			$overrides = [ 'from' => $prevNumber ];
 			// ***Replacement ends***
-			$prev = $this->makeSelfLink( $prev, array_merge( $changed, $overrides ) );
+			$prev = Message::rawParam( $this->makeSelfLink( $prev, array_merge( $changed, $overrides ) ) );
 		}
 		/* ***Replaced***
 		if ( $nextId != 0 ) {
@@ -390,20 +400,20 @@ class SpecialOrderedWhatlinkshere extends SpecialWhatLinksHere {
 		if ( $nextNumber != 0 ) {
 			$overrides = [ 'from' => $nextNumber ];
 			// ***Replacement ends***
-			$next = $this->makeSelfLink( $next, array_merge( $changed, $overrides ) );
+			$next = Message::rawParam( $this->makeSelfLink( $next, array_merge( $changed, $overrides ) ) );
 		}
 
 		$limitLinks = [];
 		$lang = $this->getLanguage();
 		foreach ( $this->limits as $limit ) {
-			$prettyLimit = htmlspecialchars( $lang->formatNum( $limit ) );
+			$prettyLimit = $lang->formatNum( $limit );
 			$overrides = [ 'limit' => $limit ];
 			$limitLinks[] = $this->makeSelfLink( $prettyLimit, array_merge( $changed, $overrides ) );
 		}
 
 		$nums = $lang->pipeList( $limitLinks );
 
-		return $this->msg( 'viewprevnext' )->rawParams( $prev, $next, $nums )->escaped();
+		return $this->msg( 'viewprevnext' )->params( $prev, $next )->rawParams( $nums )->escaped();
 	}
 
 	/**
