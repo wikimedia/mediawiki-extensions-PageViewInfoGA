@@ -13,6 +13,7 @@
 1. 파일들을 다운로드 받아 `extensions/` 폴더 아래 `UnifiedExten시sionForFemiwiki` 디렉토리에 넣으십시오.
 2. LocalSettings.php에 다음을 추가하십시오. `$wgGoogleAnalyticsTrackingID`을 설정하지 않으면 구글 태그 매니저는 활성화되지 않습니다.
 
+MediaWiki 1.36의 경우
 ```php
 wfLoadExtension( 'UnifiedExtensionForFemiwiki' );
 $wgSpecialPages['Whatlinkshere'] = [
@@ -25,6 +26,13 @@ $wgSpecialPages['Whatlinkshere'] = [
 		'NamespaceInfo',
 	]
 ];
+$wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
+```
+
+MediaWiki 1.35 혹은 그 이전 버전의 경우
+```php
+wfLoadExtension( 'UnifiedExtensionForFemiwiki' );
+$wgSpecialPages['Whatlinkshere'] = 'SpecialOrderedWhatLinksHere';
 $wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
 ```
 
