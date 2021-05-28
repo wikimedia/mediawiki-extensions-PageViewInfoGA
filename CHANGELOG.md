@@ -2,6 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## v1.0.7
+
+- Fix Call to a member function on null (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/39)
+
 ## v1.0.6
 
 - Update copied code to REL1_36.
