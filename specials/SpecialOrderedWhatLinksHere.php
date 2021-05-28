@@ -1,11 +1,53 @@
 <?php
 
+use MediaWiki\Cache\LinkBatchFactory;
+use MediaWiki\Content\IContentHandlerFactory;
+use Wikimedia\Rdbms\IDatabase;
 use Wikimedia\Rdbms\ILoadBalancer;
 
 /**
  * Implement for https://phabricator.wikimedia.org/T4306
  */
 class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
+
+	/** @var ILoadBalancer */
+	private $loadBalancer;
+
+	/** @var LinkBatchFactory */
+	private $linkBatchFactory;
+
+	/** @var IContentHandlerFactory */
+	private $contentHandlerFactory;
+
+	/** @var SearchEngineFactory */
+	private $searchEngineFactory;
+
+	/** @var NamespaceInfo */
+	private $namespaceInfo;
+
+	/**
+	 * @inheritDoc
+	 */
+	public function __construct(
+		ILoadBalancer $loadBalancer,
+		LinkBatchFactory $linkBatchFactory,
+		IContentHandlerFactory $contentHandlerFactory,
+		SearchEngineFactory $searchEngineFactory,
+		NamespaceInfo $namespaceInfo
+	) {
+		parent::__construct(
+			$loadBalancer,
+			$linkBatchFactory,
+			$contentHandlerFactory,
+			$searchEngineFactory,
+			$namespaceInfo
+		);
+		$this->loadBalancer = $loadBalancer;
+		$this->linkBatchFactory = $linkBatchFactory;
+		$this->contentHandlerFactory = $contentHandlerFactory;
+		$this->searchEngineFactory = $searchEngineFactory;
+		$this->namespaceInfo = $namespaceInfo;
+	}
 
 	/**
 	 * Copied from REL1_36 without modification to replace private function showIndirectLinks.
