@@ -1,5 +1,7 @@
 <?php
 
+namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
+
 use MediaWiki\Auth\AuthenticationRequest;
 
 class FemiwikiAuthenticationRequest extends AuthenticationRequest {

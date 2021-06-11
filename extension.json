@@ -12,29 +12,26 @@
       "CategoryTree": "*"
     }
   },
-  "AutoloadClasses": {
-    "SpecialOrderedWhatLinksHere": "specials/SpecialOrderedWhatLinksHere.php",
-    "FemiwikiHooks": "includes/FemiwikiHooks.php",
-    "FemiwikiAuthenticationRequest": "includes/FemiwikiAuthenticationRequest.php",
-    "FemiwikiPreAuthenticationProvider": "includes/FemiwikiPreAuthenticationProvider.php"
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\": "includes/"
   },
   "AuthManagerAutoConfig": {
     "preauth": {
       "FemiwikiPreAuthenticationProvider": {
-        "class": "FemiwikiPreAuthenticationProvider"
+        "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\FemiwikiPreAuthenticationProvider"
       }
     }
   },
   "Hooks": {
-    "BeforePageDisplay": "FemiwikiHooks::onBeforePageDisplay",
-    "HtmlPageLinkRendererBegin": "FemiwikiHooks::onHtmlPageLinkRendererBegin",
-    "LinkerMakeExternalLink": "FemiwikiHooks::onLinkerMakeExternalLink",
-    "SidebarBeforeOutput": "FemiwikiHooks::onSidebarBeforeOutput",
-    "SkinAddFooterLinks": "FemiwikiHooks::onSkinAddFooterLinks"
+    "BeforePageDisplay": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onBeforePageDisplay",
+    "HtmlPageLinkRendererBegin": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onHtmlPageLinkRendererBegin",
+    "LinkerMakeExternalLink": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onLinkerMakeExternalLink",
+    "SidebarBeforeOutput": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onSidebarBeforeOutput",
+    "SkinAddFooterLinks": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onSkinAddFooterLinks"
   },
   "SpecialPages": {
     "OrderedWhatlinkshere": {
-      "class": "SpecialOrderedWhatLinksHere",
+      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Specials\\SpecialOrderedWhatLinksHere",
       "services": [
         "DBLoadBalancer",
         "LinkBatchFactory",
@@ -48,10 +45,12 @@
     "UnifiedExtensionForFemiwiki": ["i18n"]
   },
   "config": {
-    "GoogleAnalyticsTrackingID": ""
+    "GoogleAnalyticsTrackingID": {
+      "value": ""
+    }
   },
   "TestAutoloadNamespaces": {
     "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Tests\\Unit\\": "tests/phpunit/unit/"
   },
-  "manifest_version": 1
+  "manifest_version": 2
 }

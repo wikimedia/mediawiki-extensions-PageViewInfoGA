@@ -1,8 +1,13 @@
 <?php
 
+namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
+
 use MediaWiki\Auth\AbstractPreAuthenticationProvider;
 use MediaWiki\Auth\AuthenticationRequest;
 use MediaWiki\Auth\AuthManager;
+use Status;
+use StatusValue;
+use User;
 
 class FemiwikiPreAuthenticationProvider extends AbstractPreAuthenticationProvider {
 
