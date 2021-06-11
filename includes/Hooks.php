@@ -2,35 +2,48 @@
 
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
 
+use Config;
 use Html;
-use MediaWiki\Linker\LinkRenderer;
-use MediaWiki\Linker\LinkTarget;
-use OutputPage;
 use RequestContext;
 use Skin;
 use Title;
 use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
 
-class Hooks {
+class Hooks implements
+	\MediaWiki\Hook\BeforePageDisplayHook,
+	\MediaWiki\Hook\LinkerMakeExternalLinkHook,
+	\MediaWiki\Hook\SidebarBeforeOutputHook,
+	\MediaWiki\Hook\SkinAddFooterLinksHook,
+	\MediaWiki\Linker\Hook\HtmlPageLinkRendererBeginHook
+	{
+
+	/**
+	 * @var Config
+	 */
+	private $config;
+
+	/**
+	 * @param Config $config
+	 */
+	public function __construct( Config $config ) {
+		$this->config = $config;
+	}
 
 	/**
 	 * Add a few links to the footer.
 	 *
-	 * @param Skin $skin
-	 * @param string $key
-	 * @param array &$footerlinks
-	 * @return bool Sends a line to the debug log if false.
+	 * @inheritDoc
 	 */
-	public static function onSkinAddFooterLinks( Skin $skin, string $key, array &$footerlinks ) {
+	public function onSkinAddFooterLinks( Skin $skin, string $key, array &$footerItems ) {
 		if ( $key !== 'places' ) {
 			return true;
 		}
 
-		$footerlinks =
+		$footerItems =
 			// Prepend terms link
 			[ 'femiwiki-terms-label' => $skin->footerLink( 'femiwiki-terms-label', 'femiwiki-terms-page' ) ] +
-			$footerlinks +
+			$footerItems +
 			// Append Infringement Notification link
 			[ 'femiwiki-support-label' => $skin->footerLink( 'femiwiki-support-label', 'femiwiki-support-page' ) ];
 
@@ -40,14 +53,11 @@ class Hooks {
 	/**
 	 * Treat external links to FemiWiki as internal links.
 	 *
-	 * @param string &$url
-	 * @param string &$text
-	 * @param string &$link
-	 * @param string[] &$attribs
-	 * @param string $linktype
-	 * @return bool|void True or no return value to continue or false to abort
+	 * @inheritDoc
 	 */
-	public static function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs, $linktype ) {
+	public function onLinkerMakeExternalLink( &$url, &$text, &$link, &$attribs,
+		$linkType
+	) {
 		if ( defined( 'MW_PHPUNIT_TEST' ) ) {
 			return true;
 		}
@@ -65,13 +75,11 @@ class Hooks {
 	}
 
 	/**
-	 * @param Skin $skin
-	 * @param array &$sidebar Sidebar content. Modify $sidebar to add or modify sidebar portlets.
-	 * @return void This hook must not abort; it must not return value.
+	 * @inheritDoc
 	 */
-	public static function onSidebarBeforeOutput( Skin $skin, &$sidebar ): void {
-		self::addWikibaseNewItemLink( $skin, $sidebar );
-		self::sidebarConvertLinks( $sidebar );
+	public function onSidebarBeforeOutput( $skin, &$sidebar ): void {
+		$this->addWikibaseNewItemLink( $skin, $sidebar );
+		$this->sidebarConvertLinks( $sidebar );
 	}
 
 	/**
@@ -82,10 +90,10 @@ class Hooks {
 	 * - Wikibase\Client\RepoItemLinkGenerator::getNewItemUrl (REL1_35)
 	 *
 	 * @param Skin $skin
-	 * @param array &$bar
+	 * @param array &$sidebar
 	 * @return void
 	 */
-	private static function addWikibaseNewItemLink( Skin $skin, &$bar ): void {
+	private function addWikibaseNewItemLink( $skin, &$sidebar ): void {
 		if ( ClientHooks::buildWikidataItemLink( $skin ) ) {
 			return;
 		}
@@ -100,7 +108,7 @@ class Hooks {
 		$url = $repoLinker->getPageUrl( 'Special:NewItem' );
 		$url = $repoLinker->addQueryParams( $url, $params );
 
-		$bar['TOOLBOX']['wikibase'] = [
+		$sidebar['TOOLBOX']['wikibase'] = [
 			'text' => $skin->msg( 'wikibase-dataitem' )->text(),
 			'href' => $url,
 			'id' => 't-wikibase'
@@ -112,8 +120,8 @@ class Hooks {
 	 * @param array &$bar
 	 * @return void
 	 */
-	private static function sidebarConvertLinks( &$bar ): void {
-		$canonicalServer = RequestContext::getMain()->getConfig()->get( 'CanonicalServer' );
+	private function sidebarConvertLinks( &$bar ): void {
+		$canonicalServer = $this->config->get( 'CanonicalServer' );
 
 		foreach ( $bar as $heading => $content ) {
 			foreach ( $content as $key => $item ) {
@@ -132,15 +140,13 @@ class Hooks {
 	/**
 	 * Add Google Tag Manager to all pages.
 	 *
-	 * @param OutputPage &$out
-	 * @param Skin &$skin
-	 * @return bool
+	 * @inheritDoc
 	 */
-	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
+	public function onBeforePageDisplay( $out, $skin ) : void {
 		global $wgGoogleAnalyticsTrackingID;
 
 			if ( $wgGoogleAnalyticsTrackingID == '' ) {
-				return true;
+				return;
 			}
 			$googleGlobalSiteTag = <<<EOF
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -154,22 +160,15 @@ class Hooks {
 </script>
 EOF;
 		$out->addHeadItems( $googleGlobalSiteTag );
-
-		return true;
 	}
 
 	/**
 	 * Do not show edit page when user clicks red link
-	 * @param LinkRenderer $linkRenderer
-	 * @param LinkTarget $target
-	 * @param string &$text
-	 * @param array &$extraAttribs
-	 * @param array &$query
-	 * @param string &$ret
-	 * @return bool
+	 * @inheritDoc
 	 */
-	public static function onHtmlPageLinkRendererBegin( LinkRenderer $linkRenderer, LinkTarget $target, &$text,
-		&$extraAttribs, &$query, &$ret ) {
+	public function onHtmlPageLinkRendererBegin( $linkRenderer, $target, &$text,
+		&$customAttribs, &$query, &$ret
+	) {
 		// See https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/23
 		if ( defined( 'MW_PHPUNIT_TEST' ) && ( $target == 'Rights Page' || $target == 'Parser test' ) ) {
 			return true;

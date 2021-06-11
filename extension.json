@@ -22,12 +22,18 @@
       }
     }
   },
+  "HookHandlers": {
+    "default": {
+      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks",
+      "services": ["MainConfig"]
+    }
+  },
   "Hooks": {
-    "BeforePageDisplay": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onBeforePageDisplay",
-    "HtmlPageLinkRendererBegin": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onHtmlPageLinkRendererBegin",
-    "LinkerMakeExternalLink": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onLinkerMakeExternalLink",
-    "SidebarBeforeOutput": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onSidebarBeforeOutput",
-    "SkinAddFooterLinks": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks::onSkinAddFooterLinks"
+    "BeforePageDisplay": "default",
+    "HtmlPageLinkRendererBegin": "default",
+    "LinkerMakeExternalLink": "default",
+    "SidebarBeforeOutput": "default",
+    "SkinAddFooterLinks": "default"
   },
   "SpecialPages": {
     "OrderedWhatlinkshere": {
