@@ -2,6 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## v1.1.0
+
+- Add backlinks to the related articles.
+
 ## v1.0.7
 
 - Fix Call to a member function on null (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/39)
