@@ -1,11 +1,18 @@
 <?php
 
+namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
+
+use Html;
 use MediaWiki\Linker\LinkRenderer;
 use MediaWiki\Linker\LinkTarget;
+use OutputPage;
+use RequestContext;
+use Skin;
+use Title;
 use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
 
-class FemiwikiHooks {
+class Hooks {
 
 	/**
 	 * Add a few links to the footer.

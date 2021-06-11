@@ -1,9 +1,19 @@
 <?php
 
+namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Specials;
+
+use FormOptions;
+use Html;
 use MediaWiki\Cache\LinkBatchFactory;
 use MediaWiki\Content\IContentHandlerFactory;
+use Message;
+use NamespaceInfo;
+use SearchEngineFactory;
+use SpecialWhatLinksHere;
+use Title;
 use Wikimedia\Rdbms\IDatabase;
 use Wikimedia\Rdbms\ILoadBalancer;
+use Xml;
 
 /**
  * Implement for https://phabricator.wikimedia.org/T4306
@@ -111,6 +121,9 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 
 	/**
 	 * Copied from REL1_36 with modification (marked as ***Message*** below)
+	 * @suppress PhanPossiblyUndeclaredVariable
+	 * @suppress PhanRedundantArrayValuesCall
+	 * @suppress PhanTypeMismatchArgumentNullable
 	 * @param int $level Recursion level
 	 * @param Title $target Target title
 	 * @param int $limit Number of entries to display
@@ -459,7 +472,7 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 	}
 
 	/**
-	 * Copied from REL1_35
+	 * Copied from REL1_36
 	 * @return string
 	 */
 	private function whatlinkshereForm() {
@@ -524,19 +537,19 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 	}
 
 	/**
-	 * Copied from REL1_35
+	 * Copied from REL1_36
 	 * @return string
 	 */
 	private function getFilterPanel() {
-		$show = $this->msg( 'show' )->escaped();
-		$hide = $this->msg( 'hide' )->escaped();
+		$show = $this->msg( 'show' )->text();
+		$hide = $this->msg( 'hide' )->text();
 
 		$changed = $this->opts->getChangedValues();
-		unset( $changed['target'] );
+		unset( $changed['target'] ); // Already in the request title
 
 		$links = [];
 		$types = [ 'hidetrans', 'hidelinks', 'hideredirs' ];
-		if ( $this->target->getNamespace() == NS_FILE ) {
+		if ( $this->target->getNamespace() === NS_FILE ) {
 			$types[] = 'hideimages';
 		}
 
@@ -558,16 +571,12 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 	}
 
 	/**
-	 * Copied from REL1_35
+	 * Copied from REL1_36
 	 * @param string|null $text
-	 * @param string $query
+	 * @param array $query
 	 * @return string
 	 */
 	private function makeSelfLink( $text, $query ) {
-		if ( $text !== null ) {
-			$text = new HtmlArmor( $text );
-		}
-
 		return $this->getLinkRenderer()->makeKnownLink(
 			$this->selfTitle,
 			$text,
