@@ -2,6 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## Unreleased
+
+- Add omited prefix in related articles.
+
 ## v1.1.0
 
 - Add backlinks to the related articles.

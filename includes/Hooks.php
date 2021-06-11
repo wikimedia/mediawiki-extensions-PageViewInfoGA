@@ -237,7 +237,7 @@ EOF;
 
 		$titles = [];
 		foreach ( $result as $row ) {
-			$titles[] = Title::newFromRow( $row )->getText();
+			$titles[] = Title::newFromRow( $row )->getPrefixedText();
 		}
 
 		return $titles;
