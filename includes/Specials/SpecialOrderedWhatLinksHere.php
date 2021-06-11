@@ -538,6 +538,7 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 
 	/**
 	 * Copied from REL1_36
+	 * phpcs:disable MediaWiki.WhiteSpace.SpaceBeforeSingleLineComment.NewLineComment
 	 * @return string
 	 */
 	private function getFilterPanel() {
@@ -569,6 +570,8 @@ class SpecialOrderedWhatLinksHere extends SpecialWhatLinksHere {
 			$this->getLanguage()->pipeList( $links )
 		);
 	}
+
+	// phpcs:enable MediaWiki.WhiteSpace.SpaceBeforeSingleLineComment.NewLineComment
 
 	/**
 	 * Copied from REL1_36
