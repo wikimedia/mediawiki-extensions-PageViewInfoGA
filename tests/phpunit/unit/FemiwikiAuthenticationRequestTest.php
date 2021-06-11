@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Tests\Unit;
 
-use FemiwikiAuthenticationRequest;
+use MediaWiki\Extension\UnifiedExtensionForFemiwiki\FemiwikiAuthenticationRequest;
 use MediaWikiUnitTestCase;
 
 /**
@@ -11,7 +11,7 @@ use MediaWikiUnitTestCase;
 class FemiwikiAuthenticationRequestTest extends MediaWikiUnitTestCase {
 
 	/**
-	 * @covers \FemiwikiAuthenticationRequest::getFieldInfo
+	 * @covers \MediaWiki\Extension\UnifiedExtensionForFemiwiki\FemiwikiAuthenticationRequest::getFieldInfo
 	 */
 	public function testGetFieldInfo() {
 		$req = new FemiwikiAuthenticationRequest( 'foo', wfMessage( 'bar' ), wfMessage( 'baz' ) );
