@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
 
 use Config;
+use ExtensionRegistry;
 use Html;
 use RequestContext;
 use Skin;
@@ -195,6 +196,9 @@ EOF;
 	 * @inheritDoc
 	 */
 	public function onOutputPageParserOutput( $out, $parserOutput ) : void {
+		if ( !ExtensionRegistry::getInstance()->isLoaded( 'RelatedArticles' ) ) {
+			return;
+		}
 		$limit = $this->config->get( 'RelatedArticlesCardLimit' );
 		$related = $parserOutput->getExtensionData( 'RelatedArticles' );
 
