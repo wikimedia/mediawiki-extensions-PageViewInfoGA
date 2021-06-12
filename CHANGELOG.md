@@ -2,21 +2,25 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## Unreleased
+
+- Uses $wgRelatedArticlesCardLimit.
+
 ## v1.1.1
 
-- Add omited prefix in related articles.
+- Adds omitted prefix in related articles.
 
 ## v1.1.0
 
-- Add backlinks to the related articles.
+- Adds backlinks to the related articles.
 
 ## v1.0.7
 
-- Fix Call to a member function on null (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/39)
+- Fixes Call to a member function on null (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/39)
 
 ## v1.0.6
 
-- Update copied code to REL1_36.
+- Updates copied code to REL1_36.
 
 ## v1.0.5
 

@@ -195,12 +195,14 @@ EOF;
 	 * @inheritDoc
 	 */
 	public function onOutputPageParserOutput( $out, $parserOutput ) : void {
+		$limit = $this->config->get( 'RelatedArticlesCardLimit' );
 		$related = $parserOutput->getExtensionData( 'RelatedArticles' );
-		$added = $this->getLinksTitle( $out->getTitle() );
 
 		if ( $related ) {
+			$added = $this->getLinksTitle( $out->getTitle(), $limit - count( $related ) );
 			$related = array_merge( $related, $added );
 		} else {
+			$added = $this->getLinksTitle( $out->getTitle(), $limit );
 			$related = $added;
 		}
 		$out->setProperty( 'RelatedArticles', $related );
@@ -208,11 +210,11 @@ EOF;
 
 	/**
 	 * @param Title $title
+	 * @param int $limit
 	 * @return array
 	 */
-	private function getLinksTitle( Title $title ): array {
+	private function getLinksTitle( Title $title, $limit ): array {
 		$dbr = $this->loadBalancer->getConnectionRef( ILoadBalancer::DB_REPLICA );
-		$limit = 20;
 
 		$subQuery = $dbr->newSelectQueryBuilder()
 			->table( 'pagelinks' )
