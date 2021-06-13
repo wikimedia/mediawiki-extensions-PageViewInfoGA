@@ -4,15 +4,16 @@ Versions and bullets are arranged chronologically from latest to oldest.
 
 ## Unreleased
 
-- Uses $wgRelatedArticlesCardLimit.
+- Uses $wgRelatedArticlesCardLimit for RelatedArticles.
+- Shows links on a page as RelatedArticles.
 
 ## v1.1.1
 
-- Adds omitted prefix in related articles.
+- Adds omitted prefix in RelatedArticles.
 
 ## v1.1.0
 
-- Adds backlinks to the related articles.
+- Adds backlinks as RelatedArticles.
 
 ## v1.0.7
 

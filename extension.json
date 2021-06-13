@@ -24,7 +24,11 @@
   },
   "HookHandlers": {
     "default": {
-      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks",
+      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\Handler",
+      "services": ["MainConfig"]
+    },
+    "RelatedArticles": {
+      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\RelatedArticlesHandler",
       "services": ["MainConfig", "DBLoadBalancer"]
     }
   },
@@ -34,7 +38,7 @@
     "LinkerMakeExternalLink": "default",
     "SidebarBeforeOutput": "default",
     "SkinAddFooterLinks": "default",
-    "OutputPageParserOutput": "default"
+    "OutputPageParserOutput": "RelatedArticles"
   },
   "SpecialPages": {
     "OrderedWhatlinkshere": {

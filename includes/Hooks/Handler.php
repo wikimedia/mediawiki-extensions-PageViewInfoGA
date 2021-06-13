@@ -1,22 +1,19 @@
 <?php
 
-namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
+namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Hooks;
 
 use Config;
-use ExtensionRegistry;
+use DisambiguatorHooks;
 use Html;
 use RequestContext;
 use Skin;
 use Title;
 use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
-use Wikimedia\Rdbms\ILoadBalancer;
-use Wikimedia\Rdbms\SelectQueryBuilder;
 
-class Hooks implements
+class Handler implements
 	\MediaWiki\Hook\BeforePageDisplayHook,
 	\MediaWiki\Hook\LinkerMakeExternalLinkHook,
-	\MediaWiki\Hook\OutputPageParserOutputHook,
 	\MediaWiki\Hook\SidebarBeforeOutputHook,
 	\MediaWiki\Hook\SkinAddFooterLinksHook,
 	\MediaWiki\Linker\Hook\HtmlPageLinkRendererBeginHook
@@ -27,16 +24,11 @@ class Hooks implements
 	 */
 	private $config;
 
-	/** @var ILoadBalancer */
-	private $loadBalancer;
-
 	/**
 	 * @param Config $config
-	 * @param ILoadBalancer $loadBalancer
 	 */
-	public function __construct( Config $config, ILoadBalancer $loadBalancer ) {
+	public function __construct( Config $config ) {
 		$this->config = $config;
-		$this->loadBalancer = $loadBalancer;
 	}
 
 	/**
@@ -193,59 +185,11 @@ EOF;
 	}
 
 	/**
-	 * @inheritDoc
-	 */
-	public function onOutputPageParserOutput( $out, $parserOutput ) : void {
-		if ( !ExtensionRegistry::getInstance()->isLoaded( 'RelatedArticles' ) ) {
-			return;
-		}
-		$limit = $this->config->get( 'RelatedArticlesCardLimit' );
-		$related = $parserOutput->getExtensionData( 'RelatedArticles' );
-
-		if ( $related ) {
-			$added = $this->getLinksTitle( $out->getTitle(), $limit - count( $related ) );
-			$related = array_merge( $related, $added );
-		} else {
-			$added = $this->getLinksTitle( $out->getTitle(), $limit );
-			$related = $added;
-		}
-		$out->setProperty( 'RelatedArticles', $related );
-	}
-
-	/**
 	 * @param Title $title
-	 * @param int $limit
-	 * @return array
+	 * @return bool
 	 */
-	private function getLinksTitle( Title $title, $limit ): array {
-		$dbr = $this->loadBalancer->getConnectionRef( ILoadBalancer::DB_REPLICA );
-
-		$subQuery = $dbr->newSelectQueryBuilder()
-			->table( 'pagelinks' )
-			->fields( [ 'pl_from' ] )
-			->conds( [
-				'pl_namespace' => $title->getNamespace(),
-				'pl_title' => $title->getDBkey(),
-				// Hide redirects
-				'rd_from' => null,
-			] )
-			->leftJoin( 'redirect', 'redirect', [ 'rd_from = pl_from' ] )
-			->caller( __METHOD__ );
-
-		$result = $dbr->newSelectQueryBuilder()
-			->table( $subQuery, 'foo' )
-			->leftJoin( 'page', 'page', [ 'page_id = pl_from' ] )
-			->fields( [ 'page_namespace', 'page_title', 'page_touched' ] )
-			->orderBy( 'page_touched', SelectQueryBuilder::SORT_DESC )
-			->limit( $limit )
-			->caller( __METHOD__ )
-			->fetchResultSet();
-
-		$titles = [];
-		foreach ( $result as $row ) {
-			$titles[] = Title::newFromRow( $row )->getPrefixedText();
-		}
-
-		return $titles;
+	private static function isDisambiguationPage( Title $title ) {
+		return \ExtensionRegistry::getInstance()->isLoaded( 'Disambiguator' ) &&
+			DisambiguatorHooks::isDisambiguationPage( $title );
 	}
 }
