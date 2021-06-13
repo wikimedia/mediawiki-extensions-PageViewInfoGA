@@ -3,7 +3,6 @@
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Hooks;
 
 use Config;
-use DisambiguatorHooks;
 use ExtensionRegistry;
 use MediaWiki\MediaWikiServices;
 use Title;
