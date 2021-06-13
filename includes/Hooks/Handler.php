@@ -3,7 +3,6 @@
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Hooks;
 
 use Config;
-use DisambiguatorHooks;
 use Html;
 use RequestContext;
 use Skin;
@@ -182,14 +181,5 @@ EOF;
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param Title $title
-	 * @return bool
-	 */
-	private static function isDisambiguationPage( Title $title ) {
-		return \ExtensionRegistry::getInstance()->isLoaded( 'Disambiguator' ) &&
-			DisambiguatorHooks::isDisambiguationPage( $title );
 	}
 }

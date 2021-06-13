@@ -3,7 +3,6 @@
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Hooks;
 
 use Config;
-use DisambiguatorHooks;
 use ExtensionRegistry;
 use MediaWiki\MediaWikiServices;
 use Title;
@@ -40,7 +39,7 @@ class RelatedArticlesHandler implements
 	 */
 	private static function isDisambiguationPage( Title $title ) {
 		return \ExtensionRegistry::getInstance()->isLoaded( 'Disambiguator' ) &&
-			DisambiguatorHooks::isDisambiguationPage( $title );
+			\MediaWiki\Extension\Disambiguator\Hooks::isDisambiguationPage( $title );
 	}
 
 	/**
