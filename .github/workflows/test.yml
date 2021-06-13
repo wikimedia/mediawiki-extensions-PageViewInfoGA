@@ -42,11 +42,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # /home/runner/cache/                            Cache
-      # /home/runner/src/                              Mediawiki installation
-      # /home/runner/src/extensions/EXTENSION_NAME/    Clone of the extension repository
-      # /home/runner/docker-images/                    Docker images which exported with docker-save command
-      # $GITHUB_WORKSPACE/.github/workflows/.test-env  Used by actions/cache
+      # /home/runner/cache/                               Cache
+      # /home/runner/src/                                 Mediawiki installation
+      # /home/runner/src/extensions/EXTENSION_NAME/       Clone of the extension repository
+      # /home/runner/docker-images/                       Docker images which exported with docker-save command
+      # $GITHUB_WORKSPACE/.github/workflows/dependencies  Used by actions/cache
       - name: Set up
         run: |
           # Export the target version of MediaWiki
@@ -118,7 +118,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /home/runner/src
-          key: ${{ runner.os }}-${{ env.MEDIAWIKI_VERSION }}-${{ hashFiles('.github/workflows/.test-env') }}
+          key: ${{ runner.os }}-${{ env.MEDIAWIKI_VERSION }}-${{ hashFiles('.github/workflows/dependencies') }}
       - name: Download MediaWiki and extensions
         run: |
           cd /home/runner
