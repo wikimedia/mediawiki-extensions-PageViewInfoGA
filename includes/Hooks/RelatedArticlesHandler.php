@@ -40,7 +40,7 @@ class RelatedArticlesHandler implements
 	 */
 	private static function isDisambiguationPage( Title $title ) {
 		return \ExtensionRegistry::getInstance()->isLoaded( 'Disambiguator' ) &&
-			DisambiguatorHooks::isDisambiguationPage( $title );
+			\MediaWiki\Extension\Disambiguator\Hooks::isDisambiguationPage( $title );
 	}
 
 	/**

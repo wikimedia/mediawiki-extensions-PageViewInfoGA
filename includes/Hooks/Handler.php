@@ -183,13 +183,4 @@ EOF;
 
 		return false;
 	}
-
-	/**
-	 * @param Title $title
-	 * @return bool
-	 */
-	private static function isDisambiguationPage( Title $title ) {
-		return \ExtensionRegistry::getInstance()->isLoaded( 'Disambiguator' ) &&
-			DisambiguatorHooks::isDisambiguationPage( $title );
-	}
 }
