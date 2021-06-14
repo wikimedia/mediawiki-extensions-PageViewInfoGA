@@ -6,6 +6,7 @@ Versions and bullets are arranged chronologically from latest to oldest.
 
 - Uses $wgRelatedArticlesCardLimit for RelatedArticles.
 - Shows links on a page as RelatedArticles.
+- Implements GoogleAnalyticsPageViewService.
 
 ## v1.1.1
 
