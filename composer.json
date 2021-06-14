@@ -1,6 +1,9 @@
 {
   "name": "femiwiki/unified-extension-for-femiwiki",
   "description": "an extension for femiwiki.",
+  "require": {
+    "google/apiclient": "^2.9"
+  },
   "require-dev": {
     "mediawiki/mediawiki-codesniffer": "36.0.0",
     "mediawiki/mediawiki-phan-config": "0.10.6",
