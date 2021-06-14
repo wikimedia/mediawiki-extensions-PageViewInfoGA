@@ -7,7 +7,8 @@
 - 문서 내용과 사이드바에서 `https://femiwiki.com`로 시작하는 링크, 혹은 사이트에 설정에 따라 같은 도메인으로 시작하는 링크를 내부 링크처럼 표시
 - 모든 문서에 구글 태그 매니저 스크립트 추가
 - [[특:가리키는문서]]의 문서들을 가나다순으로 표시
-- 모든 문서의 관련 항목으로 해당 문서를 가리키는 문서 추가
+- 모든 문서의 관련 항목으로 해당 문서에서 가리키는 문서와 해당 문서를 가리키는 문서 추가
+- GoogleAnalytics를 위한 PageViewInfo 구현 ([Hook 패치](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/PageViewInfo/+/695669/)가 적용된 PageViewInfo 포크가 설치되어야 함)
 
 Breaking change가 모든 릴리즈에서 있을 수 있습니다. 페미위키를 제외한 위키에서의 사용을 권하지 않습니다.
 
@@ -29,6 +30,8 @@ $wgSpecialPages['Whatlinkshere'] = [
 	]
 ];
 $wgGoogleAnalyticsTrackingID = 'AA-00000000-0';
+$wgUnifiedExtensionForFemiwikiGoogleAnalyticsCredentialsFile = '/a/analytics-credentials-file.json';
+$wgUnifiedExtensionForFemiwikiGoogleAnalyticsProfileId = '000000000';
 ```
 
 ## Contributing
