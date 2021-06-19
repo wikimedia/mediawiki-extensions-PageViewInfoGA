@@ -67,6 +67,10 @@
     "UnifiedExtensionForFemiwikiGoogleAnalyticsProfileId": {
       "value": false,
       "description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID"
+    },
+    "UnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces": {
+      "value": [],
+      "description": "An array of namespaces which can be a target for RelatedArticles. Empty array means allowing all namespaces."
     }
   },
   "load_composer_autoloader": true,
