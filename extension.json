@@ -30,6 +30,10 @@
     "RelatedArticles": {
       "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\RelatedArticlesHandler",
       "services": ["MainConfig", "DBLoadBalancer"]
+    },
+    "PageViewInfo": {
+      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\PageViewInfoHandler",
+      "services": ["MainConfig"]
     }
   },
   "Hooks": {

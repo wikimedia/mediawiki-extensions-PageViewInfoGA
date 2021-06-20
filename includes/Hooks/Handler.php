@@ -138,31 +138,6 @@ class Handler implements
 	}
 
 	/**
-	 * Add Google Tag Manager to all pages.
-	 *
-	 * @inheritDoc
-	 */
-	public function onBeforePageDisplay( $out, $skin ) : void {
-		global $wgGoogleAnalyticsTrackingID;
-
-			if ( $wgGoogleAnalyticsTrackingID == '' ) {
-				return;
-			}
-			$googleGlobalSiteTag = <<<EOF
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id={$wgGoogleAnalyticsTrackingID}"></script>
-<script>
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-
-	gtag('config', '{$wgGoogleAnalyticsTrackingID}');
-</script>
-EOF;
-		$out->addHeadItems( $googleGlobalSiteTag );
-	}
-
-	/**
 	 * Do not show edit page when user clicks red link
 	 * @inheritDoc
 	 */
