@@ -108,7 +108,7 @@ class RelatedArticlesHandler implements
 			}
 		}
 
-		return $retVal;
+		return array_filter( $retVal );
 	}
 
 	/**
