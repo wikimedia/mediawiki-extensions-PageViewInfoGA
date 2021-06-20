@@ -142,6 +142,14 @@ class RelatedArticlesHandler implements
 				'page_namespace',
 				'page_title',
 				'page_touched',
+				// Used by LinkCache::addGoodLinkObjFromRow()
+				'page_id',
+				'page_len',
+				'page_is_redirect',
+				'page_latest',
+				'page_content_model',
+				'page_lang',
+				'page_restrictions',
 			] )
 			->getSQL();
 	}
@@ -180,6 +188,14 @@ class RelatedArticlesHandler implements
 				'page_namespace' => 'target.page_namespace',
 				'page_title' => 'target.page_title',
 				'page_touched' => 'target.page_touched',
+				// Used by LinkCache::addGoodLinkObjFromRow()
+				'page_id' => 'target.page_id',
+				'page_len' => 'target.page_len',
+				'page_is_redirect' => 'target.page_is_redirect',
+				'page_latest' => 'target.page_latest',
+				'page_content_model' => 'target.page_content_model',
+				'page_lang' => 'target.page_lang',
+				'page_restrictions' => 'target.page_restrictions',
 			] )
 			->getSQL();
 	}
@@ -214,6 +230,14 @@ class RelatedArticlesHandler implements
 				'page_namespace',
 				'page_title',
 				'page_touched',
+				// Used by LinkCache::addGoodLinkObjFromRow()
+				'page_id',
+				'page_len',
+				'page_is_redirect',
+				'page_latest',
+				'page_content_model',
+				'page_lang',
+				'page_restrictions',
 			] )
 			->getSQL();
 	}
@@ -246,16 +270,24 @@ class RelatedArticlesHandler implements
 				'pl_namespace = page_namespace',
 				'pl_title = page_title',
 			] )
-			->leftJoin( 'page', 'redirect_page', [
+			->leftJoin( 'page', 'redirect_from', [
 				'page_id = pl_from',
 			] )
 			->conds( $targetNamespaces ? [
-				'redirect_page.page_namespace' => $targetNamespaces,
+				'redirect_from.page_namespace' => $targetNamespaces,
 			] : [] )
 			->fields( [
-				'page_namespace' => 'redirect_page.page_namespace',
-				'page_title' => 'redirect_page.page_title',
-				'page_touched',
+				'page_namespace' => 'redirect_from.page_namespace',
+				'page_title' => 'redirect_from.page_title',
+				'page_touched' => 'redirect_from.page_touched',
+				// Used by LinkCache::addGoodLinkObjFromRow()
+				'page_id' => 'redirect_from.page_id',
+				'page_len' => 'redirect_from.page_len',
+				'page_is_redirect' => 'redirect_from.page_is_redirect',
+				'page_latest' => 'redirect_from.page_latest',
+				'page_content_model' => 'redirect_from.page_content_model',
+				'page_lang' => 'redirect_from.page_lang',
+				'page_restrictions' => 'redirect_from.page_restrictions',
 			] )
 			->getSQL();
 	}

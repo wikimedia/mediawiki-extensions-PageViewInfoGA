@@ -2,6 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## Unreleased
+
+- Queries more fields of RelatedArticles to fix cache.
+
 ## v1.2.2
 
 - Adds a configuration for disabling adding links as RelatedArticles.
