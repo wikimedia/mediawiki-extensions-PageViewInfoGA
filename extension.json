@@ -68,6 +68,10 @@
       "value": false,
       "description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID"
     },
+    "UnifiedExtensionForFemiwikiRelatedArticlesUseLinks": {
+      "value": true,
+      "description": "If set to true, Related Articles on a page would show links from the page and links to the page."
+    },
     "UnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces": {
       "value": [],
       "description": "An array of namespaces which can be a target for RelatedArticles. Empty array means allowing all namespaces."
