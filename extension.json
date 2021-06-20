@@ -75,8 +75,7 @@
   },
   "load_composer_autoloader": true,
   "TestAutoloadNamespaces": {
-    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Tests\\Unit\\": "tests/phpunit/unit/",
-    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Tests\\Integration\\": "tests/phpunit/integration/"
+    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Tests\\Unit\\": "tests/phpunit/unit/"
   },
   "manifest_version": 2
 }

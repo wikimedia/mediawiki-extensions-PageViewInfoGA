@@ -2,16 +2,17 @@
 
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
 
-use Google_Client;
-use Google_Service_AnalyticsReporting;
-use Google_Service_AnalyticsReporting_DateRange;
-use Google_Service_AnalyticsReporting_Dimension;
-use Google_Service_AnalyticsReporting_DimensionFilter;
-use Google_Service_AnalyticsReporting_DimensionFilterClause;
-use Google_Service_AnalyticsReporting_GetReportsRequest;
-use Google_Service_AnalyticsReporting_Metric;
-use Google_Service_AnalyticsReporting_OrderBy;
-use Google_Service_AnalyticsReporting_ReportRequest;
+use Google\Client;
+use Google\Service\AnalyticsReporting;
+use Google\Service\AnalyticsReporting\DateRange;
+use Google\Service\AnalyticsReporting\Dimension;
+use Google\Service\AnalyticsReporting\DimensionFilter;
+use Google\Service\AnalyticsReporting\DimensionFilterClause;
+use Google\Service\AnalyticsReporting\GetReportsRequest;
+use Google\Service\AnalyticsReporting\Metric;
+use Google\Service\AnalyticsReporting\OrderBy;
+use Google\Service\AnalyticsReporting\ReportRequest;
+use Google\Service\AnalyticsReporting\ReportRow;
 use InvalidArgumentException;
 use MediaWiki\Extensions\PageViewInfo\PageViewService;
 use Psr\Log\LoggerAwareInterface;
@@ -31,7 +32,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	/** @var LoggerInterface */
 	protected $logger;
 
-	/** @var Google_Service_AnalyticsReporting */
+	/** @var AnalyticsReporting */
 	protected $analytics;
 
 	/** @var string Profile(View) ID of the Google Analytics View. */
@@ -43,10 +44,13 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	/** @var array Cache for getEmptyDateRange() */
 	protected $range;
 
-	/** @var WebRequest|string[] The request that asked for this data; see the originalRequest
+	/**
+	 * @var WebRequest|string[] The request that asked for this data; see the originalRequest
 	 *    parameter of Http::request()
 	 */
 	protected $originalRequest;
+
+	public const MAX_REQUEST = 5;
 
 	/**
 	 * @param array $options Associative array.
@@ -59,14 +63,14 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 		$this->logger = new NullLogger();
 
-		$client = new Google_Client();
+		$client = new Client();
 		$client->setApplicationName( 'PageViewInfo' );
 		if ( $options['credentialsFile'] ) {
 			$client->setAuthConfig( $options['credentialsFile'] );
 		}
-		$client->addScope( Google_Service_AnalyticsReporting::ANALYTICS_READONLY );
+		$client->addScope( AnalyticsReporting::ANALYTICS_READONLY );
 
-		$this->analytics = new Google_Service_AnalyticsReporting( $client );
+		$this->analytics = new AnalyticsReporting( $client );
 
 		$this->profileId = $options['profileId'];
 	}
@@ -106,17 +110,18 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 		$status = StatusValue::newGood();
 		$result = [];
+		$requests = [];
 		foreach ( $titles as $title ) {
 			/** @var Title $title */
 			$result[$title->getPrefixedDBkey()] = $this->getEmptyDateRange( $days );
 
 			// Create the DateRange object.
-			$dateRange = new Google_Service_AnalyticsReporting_DateRange();
+			$dateRange = new DateRange();
 			$dateRange->setStartDate( $days . 'daysAgo' );
 			$dateRange->setEndDate( "1daysAgo" );
 
 			// Create the Metrics object.
-			$gaMetric = new Google_Service_AnalyticsReporting_Metric();
+			$gaMetric = new Metric();
 			if ( $metric === self::METRIC_VIEW ) {
 				$gaMetric->setExpression( 'ga:pageviews' );
 			} elseif ( $metric === self::METRIC_UNIQUE ) {
@@ -126,44 +131,59 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			}
 
 			// Create the Dimension object.
-			$dimension = new Google_Service_AnalyticsReporting_Dimension();
-			$dimension->setName( 'ga:date' );
+			$dimensionDate = new Dimension();
+			$dimensionDate->setName( 'ga:date' );
+			$dimensionPageTitle = new Dimension();
+			$dimensionPageTitle->setName( 'ga:pageTitle' );
 
 			// Create the DimensionFilterClause object.
 			// TODO Use unique custom dimension instead of ga:pageTitle and provide the instruction to the end-users.
-			$dimensionFilter = new Google_Service_AnalyticsReporting_DimensionFilter();
+			$dimensionFilter = new DimensionFilter();
 			$dimensionFilter->setDimensionName( 'ga:pageTitle' );
 			$dimensionFilter->setOperator( 'REGEXP' );
 			$dimensionFilter->setExpressions( [
 				'^' . str_replace( '_', ' ', $title->getPrefixedDBkey() ) . ' - [^-]+$' ] );
-			$dimensionFilterClause = new Google_Service_AnalyticsReporting_DimensionFilterClause();
+			$dimensionFilterClause = new DimensionFilterClause();
 			$dimensionFilterClause->setFilters( [ $dimensionFilter ] );
 
 			// Create the ReportRequest object.
-			$request = new Google_Service_AnalyticsReporting_ReportRequest();
+			$request = new ReportRequest();
 			$request->setViewId( $this->profileId );
 			$request->setDateRanges( [ $dateRange ] );
 			$request->setMetrics( [ $gaMetric ] );
-			$request->setDimensions( [ $dimension ] );
+			$request->setDimensions( [ $dimensionDate, $dimensionPageTitle ] );
 			$request->setDimensionFilterClauses( [ $dimensionFilterClause ] );
 
-			$body = new Google_Service_AnalyticsReporting_GetReportsRequest();
-			$body->setReportRequests( [ $request ] );
+			$requests[] = $request;
+		}
+
+		for ( $i = 0; $i < count( $requests ); $i += self::MAX_REQUEST ) {
+			$req = array_slice( $requests, $i, self::MAX_REQUEST );
+			$body = new GetReportsRequest();
+			$body->setReportRequests( $req );
 
 			try {
-				$data = $this->analytics->reports->batchGet( $body );
-				$rows = $data->getReports()[0]->getData()->getRows();
-				foreach ( $rows as $row ) {
-					$ts = $row->dimensions[0];
-					$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
-					$count = (int)$row->metrics[0]->values[0];
-					$result[$title->getPrefixedDBkey()][$day] = $count;
+				$reports = $this->analytics->reports->batchGet( $body )->getReports();
+				foreach ( $reports as $rep ) {
+					$rows = $rep->getData()->getRows();
+					foreach ( $rows as $row ) {
+						if ( !( $row instanceof ReportRow ) ) {
+							continue;
+						}
+						$ts = $row->getDimensions()[0];
+						$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
+						$count = (int)$row->getMetrics()[0]->getValues()[0];
+						$title = $this->pageTitleForMW( $row->getDimensions()[1] );
+
+						$result[$title][$day] = $count;
+						$status->success[$title] = true;
+					}
 				}
-				$status->success[$title->getPrefixedDBkey()] = true;
 			} catch ( RuntimeException $e ) {
 				$status->error( 'pvi-invalidresponse' );
-				$status->success[$title->getPrefixedDBkey()] = false;
-				continue;
+				foreach ( $titles as $title ) {
+					$status->success[$title->getPrefixedDBkey()] = false;
+				}
 			}
 		}
 		$status->successCount = count( array_filter( $status->success ) );
@@ -185,12 +205,12 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		$result = $this->getEmptyDateRange( $days );
 
 		// Create the DateRange object.
-		$dateRange = new Google_Service_AnalyticsReporting_DateRange();
+		$dateRange = new DateRange();
 		$dateRange->setStartDate( $days . 'daysAgo' );
 		$dateRange->setEndDate( '1daysAgo' );
 
 		// Create the Metrics object.
-		$gaMetric = new Google_Service_AnalyticsReporting_Metric();
+		$gaMetric = new Metric();
 		if ( $metric === self::METRIC_VIEW ) {
 			$gaMetric->setExpression( 'ga:pageviews' );
 		} elseif ( $metric === self::METRIC_UNIQUE ) {
@@ -200,17 +220,17 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		}
 
 		// Create the Dimension object.
-		$dimension = new Google_Service_AnalyticsReporting_Dimension();
+		$dimension = new Dimension();
 		$dimension->setName( 'ga:date' );
 
 		// Create the ReportRequest object.
-		$request = new Google_Service_AnalyticsReporting_ReportRequest();
+		$request = new ReportRequest();
 		$request->setViewId( $this->profileId );
 		$request->setDateRanges( [ $dateRange ] );
 		$request->setMetrics( [ $gaMetric ] );
 		$request->setDimensions( [ $dimension ] );
 
-		$body = new Google_Service_AnalyticsReporting_GetReportsRequest();
+		$body = new GetReportsRequest();
 		$body->setReportRequests( [ $request ] );
 
 		$status = Status::newGood();
@@ -241,13 +261,13 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		}
 
 		// Create the DateRange object.
-		$dateRange = new Google_Service_AnalyticsReporting_DateRange();
+		$dateRange = new DateRange();
 		$dateRange->setStartDate( '2daysAgo' );
 		$dateRange->setEndDate( '1daysAgo' );
 
 		// Create the Metrics object and OrderBy object.
-		$gaMetric = new Google_Service_AnalyticsReporting_Metric();
-		$orderBy = new Google_Service_AnalyticsReporting_OrderBy();
+		$gaMetric = new Metric();
+		$orderBy = new OrderBy();
 		$orderBy->setSortOrder( 'DESCENDING' );
 		if ( $metric === self::METRIC_VIEW ) {
 			$gaMetric->setExpression( 'ga:pageviews' );
@@ -258,18 +278,18 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		}
 
 		// Create the Dimension object.
-		$dimension = new Google_Service_AnalyticsReporting_Dimension();
+		$dimension = new Dimension();
 		$dimension->setName( 'ga:pageTitle' );
 
 		// Create the ReportRequest object.
-		$request = new Google_Service_AnalyticsReporting_ReportRequest();
+		$request = new ReportRequest();
 		$request->setViewId( $this->profileId );
 		$request->setDateRanges( [ $dateRange ] );
 		$request->setMetrics( [ $gaMetric ] );
 		$request->setDimensions( [ $dimension ] );
 		$request->setOrderBys( [ $orderBy ] );
 
-		$body = new Google_Service_AnalyticsReporting_GetReportsRequest();
+		$body = new GetReportsRequest();
 		$body->setReportRequests( [ $request ] );
 
 		$status = Status::newGood();
@@ -279,8 +299,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 			foreach ( $rows as $row ) {
 				$title = $row->dimensions[0];
-				$title = preg_replace( '/ - [^-]+$/', '', $title );
-				$title = preg_replace( '/ /', '_', $title );
+				$title = $this->pageTitleForMW( $title );
 				$count = (int)$row->metrics[0]->values[0];
 				$result[$title] = $count;
 			}
@@ -341,5 +360,17 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		$end = $this->lastCompleteDay + 12 * 3600;
 		$start = $end - ( $days - 1 ) * 24 * 3600;
 		return [ gmdate( 'Ymd', $start ) . '00', gmdate( 'Ymd', $end ) . '00' ];
+	}
+
+	/**
+	 * @param string $gaTitle
+	 * @return string title text converted MediaWiki-friendly
+	 */
+	protected static function pageTitleForMW( $gaTitle ) {
+		// TODO: Use "pagetitle" and "pagetitle-view-mainpage" messages
+		$title = preg_replace( '/ - [^-]+$/', '', $gaTitle );
+		$title = preg_replace( '/ /', '_', $title );
+
+		return $title;
 	}
 }

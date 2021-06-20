@@ -21,5 +21,10 @@
       "phpcs -p -s",
       "minus-x check ."
     ]
+  },
+  "extra": {
+    "google/apiclient-services": [
+      "Analytics"
+    ]
   }
 }
