@@ -6,6 +6,7 @@ Versions and bullets are arranged chronologically from latest to oldest.
 
 - Limits related articles order by category asc and adds a configuration variable `$wgUnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces` to scope target namespaces.
 - Group requests of GoogleAnalytics to 5 to reduce the latency.
+- Filters empty strings from RelatedArticles. (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/42)
 
 ## v1.2.0
 
