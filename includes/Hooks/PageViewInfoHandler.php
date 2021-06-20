@@ -6,7 +6,46 @@ use MediaWiki\Extension\UnifiedExtensionForFemiwiki\GoogleAnalyticsPageViewServi
 use MediaWiki\Extensions\PageViewInfo\PageViewService;
 use MediaWiki\MediaWikiServices;
 
-class PageViewInfoHandler {
+class PageViewInfoHandler implements
+	\MediaWiki\Hook\BeforePageDisplayHook
+	{
+	/**
+	 * @var Config
+	 */
+	private $config;
+
+	/**
+	 * @param Config $config
+	 */
+	public function __construct( Config $config ) {
+		$this->config = $config;
+	}
+
+	/**
+	 * Add Google Tag Manager to all pages.
+	 *
+	 * @inheritDoc
+	 */
+	public function onBeforePageDisplay( $out, $skin ) : void {
+		$trackingID = $this->config->get( 'GoogleAnalyticsTrackingID' );
+		if ( $trackingID == '' ) {
+			return;
+		}
+
+		$googleGlobalSiteTag = <<<EOF
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={$trackingID}"></script>
+<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', '{$trackingID}');
+</script>
+EOF;
+		$out->addHeadItems( $googleGlobalSiteTag );
+	}
+
 	/**
 	 * @param PageViewService &$service
 	 * @return bool|void
