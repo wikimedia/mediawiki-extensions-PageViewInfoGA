@@ -11,7 +11,6 @@ use Wikibase\Client\ClientHooks;
 use Wikibase\Client\WikibaseClient;
 
 class Handler implements
-	\MediaWiki\Hook\BeforePageDisplayHook,
 	\MediaWiki\Hook\LinkerMakeExternalLinkHook,
 	\MediaWiki\Hook\SidebarBeforeOutputHook,
 	\MediaWiki\Hook\SkinAddFooterLinksHook,

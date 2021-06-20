@@ -37,7 +37,7 @@
     }
   },
   "Hooks": {
-    "BeforePageDisplay": "default",
+    "BeforePageDisplay": "PageViewInfo",
     "HtmlPageLinkRendererBegin": "default",
     "LinkerMakeExternalLink": "default",
     "OutputPageParserOutput": "RelatedArticles",

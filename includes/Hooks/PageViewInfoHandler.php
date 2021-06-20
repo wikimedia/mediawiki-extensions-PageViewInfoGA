@@ -2,6 +2,7 @@
 
 namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki\Hooks;
 
+use Config;
 use MediaWiki\Extension\UnifiedExtensionForFemiwiki\GoogleAnalyticsPageViewService;
 use MediaWiki\Extensions\PageViewInfo\PageViewService;
 use MediaWiki\MediaWikiServices;
@@ -32,6 +33,9 @@ class PageViewInfoHandler implements
 			return;
 		}
 
+		$title = $out->getTitle();
+		$pageId = $title->isSpecialPage() ? 0 : $title->getId();
+		$pageTitle = $title->getPrefixedDBkey();
 		$googleGlobalSiteTag = <<<EOF
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={$trackingID}"></script>
@@ -40,7 +44,14 @@ class PageViewInfoHandler implements
 	function gtag(){dataLayer.push(arguments);}
 	gtag('js', new Date());
 
-	gtag('config', '{$trackingID}');
+	gtag('config', '{$trackingID}', {
+		'custom_map': {
+			'dimension1': 'mw:page_id',
+			'dimension2': 'mw:page_title'
+		},
+		'mw:page_id': {$pageId},
+		'mw:page_title': '{$pageTitle}'
+	});
 </script>
 EOF;
 		$out->addHeadItems( $googleGlobalSiteTag );

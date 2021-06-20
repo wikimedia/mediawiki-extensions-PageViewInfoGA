@@ -5,6 +5,7 @@ Versions and bullets are arranged chronologically from latest to oldest.
 ## Unreleased
 
 - Queries more fields of RelatedArticles to fix cache.
+- Adds custom dimensions to GoogleAnalytics.
 
 ## v1.2.2
 
