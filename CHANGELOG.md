@@ -2,6 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
+## v1.2.2
+
+- Adds a configuration for disabling adding links as RelatedArticles.
+
 ## v1.2.1
 
 - Limits related articles order by category asc and adds a configuration variable `$wgUnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces` to scope target namespaces.
