@@ -116,7 +116,6 @@ class Hooks implements
 					'readCustomDimensions' => $readCustomDimensions,
 				] );
 
-				return $service;
 				$cachedService = new CachedPageViewService( $service, $cache );
 				$cachedService->setCachedDays( $cachedDays );
 				$cachedService->setLogger( $logger );
