@@ -1,12 +1,8 @@
 {
   "@metadata": {
-    "authors": []
+    "authors": [
+			"렌즈"
+    ]
   },
-  "unifiedextensionforfemiwiki-desc": "an extension for femiwiki. Extend the [[Special:UncategorizedCategories]] and [[Special:WhatLinksHere]] etc.",
-  "femiwiki-terms-label": "Terms",
-  "femiwiki-terms-page": "Project:Terms",
-  "femiwiki-support-label": "Support desk",
-  "femiwiki-support-page": "Project:Support",
-  "unifiedextensionforfemiwiki-createaccount": "Enter \"I am a feminist\" below ([[Special:Captcha/help|more info]]):",
-  "unifiedextensionforfemiwiki-createaccount-fail": "Please enter \"I am a feminist\" in the last form"
+  "pageviewinfoga-desc": "Implements PageViewService for GoogleAnalytics."
 }

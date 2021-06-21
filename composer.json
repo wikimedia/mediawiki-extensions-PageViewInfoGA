@@ -1,6 +1,6 @@
 {
-  "name": "femiwiki/unified-extension-for-femiwiki",
-  "description": "an extension for femiwiki.",
+  "name": "femiwiki/page-view-info-ga",
+  "description": "Implements PageViewService for GoogleAnalytics",
   "require": {
     "google/apiclient": "^2.9"
   },
