@@ -14,4 +14,4 @@ BUG FIXES:
 
 ## Previous Releases
 
-- [REL1_36](https://github.com/femiwiki/UnifiedExtensionForFemiwiki/blob/REL1_36/CHANGELOG.md)
+- [REL1_36](https://github.com/femiwiki/PageViewInfoGA/blob/REL1_36/CHANGELOG.md)
