@@ -21,7 +21,6 @@ use Psr\Log\NullLogger;
 use RuntimeException;
 use Status;
 use StatusValue;
-use WebRequest;
 
 /**
  * PageViewService implementation for wikis using the Google Analytics
@@ -37,17 +36,17 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	/** @var string Profile(View) ID of the Google Analytics View. */
 	protected $profileId;
 
+	/** @var array */
+	protected $customMap;
+
+	/** @var bool */
+	protected $readCustomDimensions;
+
 	/** @var int UNIX timestamp of 0:00 of the last day with complete data */
 	protected $lastCompleteDay;
 
 	/** @var array Cache for getEmptyDateRange() */
 	protected $range;
-
-	/**
-	 * @var WebRequest|string[] The request that asked for this data; see the originalRequest
-	 *    parameter of Http::request()
-	 */
-	protected $originalRequest;
 
 	public const MAX_REQUEST = 5;
 
@@ -71,8 +70,8 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		$client->addScope( AnalyticsReporting::ANALYTICS_READONLY );
 		$this->analytics = new AnalyticsReporting( $client );
 
-		$this->profileId = $options['profileId'];
-		$this->customMap = $options['customMap'];
+		$this->profileId = $options['profileId'] ?? false;
+		$this->customMap = $options['customMap'] ?? false;
 		$this->readCustomDimensions = $options['readCustomDimensions'] ?? false;
 	}
 
@@ -165,6 +164,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			$body = new GetReportsRequest();
 			$body->setReportRequests( $req );
 
+			$reports = [];
 			try {
 				$reports = $this->analytics->reports->batchGet( $body )->getReports();
 			} catch ( \Google\Service\Exception $e ) {
