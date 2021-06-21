@@ -1,89 +1,62 @@
 {
-  "name": "UnifiedExtensionForFemiwiki",
-  "version": "1.2.2",
+  "name": "PageViewInfoGA",
+  "version": "0.1.0",
   "author": "[https://femiwiki.com/ Femiwiki Team]",
-  "url": "https://github.com/femiwiki/unifiedExtensionForFemiwiki",
-  "descriptionmsg": "unifiedextensionforfemiwiki-desc",
+  "url": "https://github.com/femiwiki/PageViewInfoGA",
+  "descriptionmsg": "pageviewinfoga-desc",
   "license-name": "AGPL-3.0-or-later",
-  "type": "specialpage",
   "requires": {
     "MediaWiki": ">= 1.36.0",
     "extensions": {
-      "CategoryTree": "*"
+      "PageViewInfo": "*"
     }
   },
   "AutoloadNamespaces": {
-    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\": "includes/"
-  },
-  "AuthManagerAutoConfig": {
-    "preauth": {
-      "FemiwikiPreAuthenticationProvider": {
-        "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\FemiwikiPreAuthenticationProvider"
-      }
-    }
+    "MediaWiki\\Extension\\PageViewInfoGA\\": "src/"
   },
   "HookHandlers": {
     "default": {
-      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\Handler",
-      "services": ["MainConfig"]
-    },
-    "RelatedArticles": {
-      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\RelatedArticlesHandler",
-      "services": ["MainConfig", "DBLoadBalancer"]
-    },
-    "PageViewInfo": {
-      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\PageViewInfoHandler",
+      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks",
       "services": ["MainConfig"]
     }
   },
   "Hooks": {
-    "BeforePageDisplay": "PageViewInfo",
-    "HtmlPageLinkRendererBegin": "default",
-    "LinkerMakeExternalLink": "default",
-    "OutputPageParserOutput": "RelatedArticles",
-    "PageViewInfoAfterPageViewService": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Hooks\\PageViewInfoHandler::onPageViewInfoAfterPageViewService",
-    "SidebarBeforeOutput": "default",
-    "SkinAddFooterLinks": "default"
-  },
-  "SpecialPages": {
-    "OrderedWhatlinkshere": {
-      "class": "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Specials\\SpecialOrderedWhatLinksHere",
-      "services": [
-        "DBLoadBalancer",
-        "LinkBatchFactory",
-        "ContentHandlerFactory",
-        "SearchEngineFactory",
-        "NamespaceInfo"
-      ]
-    }
+    "BeforePageDisplay": "default",
+    "MediaWikiServices": "default"
   },
   "MessagesDirs": {
-    "UnifiedExtensionForFemiwiki": ["i18n"]
+    "PageViewInfoGA": ["i18n"]
   },
   "config": {
-    "GoogleAnalyticsTrackingID": {
-      "value": ""
+    "PageViewInfoGATrackingID": {
+      "value": false
     },
-    "UnifiedExtensionForFemiwikiGoogleAnalyticsCredentialsFile": {
+    "PageViewInfoGACredentialsFile": {
       "value": false,
       "description": "The file name of the credentials from the Google API Console."
     },
-    "UnifiedExtensionForFemiwikiGoogleAnalyticsProfileId": {
+    "PageViewInfoGAProfileId": {
       "value": false,
-      "description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID"
+      "description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID."
     },
-    "UnifiedExtensionForFemiwikiRelatedArticlesUseLinks": {
+    "PageViewInfoGAWriteCustomDimensions": {
       "value": true,
-      "description": "If set to true, Related Articles on a page would show links from the page and links to the page."
+      "description": "Send custom dimensions MediaWiki-readable page id and page title."
     },
-    "UnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces": {
-      "value": [],
-      "description": "An array of namespaces which can be a target for RelatedArticles. Empty array means allowing all namespaces."
+    "PageViewInfoGAWriteCustomMap": {
+      "value": {
+        "dimension1": "mw:page_id",
+        "dimension2": "mw:page_title"
+      }
+    },
+    "PageViewInfoGAReadCustomDimensions": {
+      "value": false,
+      "description": "Use custom dimensions require additional installation steps."
     }
   },
   "load_composer_autoloader": true,
   "TestAutoloadNamespaces": {
-    "MediaWiki\\Extension\\UnifiedExtensionForFemiwiki\\Tests\\Unit\\": "tests/phpunit/unit/"
+    "MediaWiki\\Extension\\PageViewInfoGA\\Tests\\Unit\\": "tests/phpunit/unit/"
   },
   "manifest_version": 2
 }

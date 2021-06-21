@@ -1,6 +1,6 @@
 <?php
 
-namespace MediaWiki\Extension\UnifiedExtensionForFemiwiki;
+namespace MediaWiki\Extension\PageViewInfoGA;
 
 use Google\Client;
 use Google\Service\AnalyticsReporting;
@@ -21,7 +21,6 @@ use Psr\Log\NullLogger;
 use RuntimeException;
 use Status;
 use StatusValue;
-use Title;
 use WebRequest;
 
 /**
@@ -68,11 +67,13 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		if ( $options['credentialsFile'] ) {
 			$client->setAuthConfig( $options['credentialsFile'] );
 		}
-		$client->addScope( AnalyticsReporting::ANALYTICS_READONLY );
 
+		$client->addScope( AnalyticsReporting::ANALYTICS_READONLY );
 		$this->analytics = new AnalyticsReporting( $client );
 
 		$this->profileId = $options['profileId'];
+		$this->customMap = $options['customMap'];
+		$this->readCustomDimensions = $options['readCustomDimensions'] ?? false;
 	}
 
 	/**
@@ -83,18 +84,11 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	}
 
 	/**
-	 * @param WebRequest|string[] $originalRequest See the 'originalRequest' parameter of
-	 *   Http::request().
-	 */
-	public function setOriginalRequest( $originalRequest ) {
-		$this->originalRequest = $originalRequest;
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	public function supports( $metric, $scope ) {
-		return true;
+		return in_array( $metric, [ self::METRIC_VIEW, self::METRIC_UNIQUE ] ) &&
+			in_array( $scope, [ self::SCOPE_ARTICLE, self::SCOPE_TOP, self::SCOPE_SITE ] );
 	}
 
 	/**
@@ -108,19 +102,22 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			throw new InvalidArgumentException( 'Invalid days: ' . $days );
 		}
 
+		$readCustomDimensions = $this->readCustomDimensions;
 		$status = StatusValue::newGood();
+		foreach ( $titles as $title ) {
+			$status->success[$title->getPrefixedDBkey()] = false;
+		}
 		$result = [];
 		$requests = [];
 		foreach ( $titles as $title ) {
-			/** @var Title $title */
 			$result[$title->getPrefixedDBkey()] = $this->getEmptyDateRange( $days );
 
-			// Create the DateRange object.
+			// Create DateRange
 			$dateRange = new DateRange();
 			$dateRange->setStartDate( $days . 'daysAgo' );
 			$dateRange->setEndDate( "1daysAgo" );
 
-			// Create the Metrics object.
+			// Create Metrics
 			$gaMetric = new Metric();
 			if ( $metric === self::METRIC_VIEW ) {
 				$gaMetric->setExpression( 'ga:pageviews' );
@@ -130,28 +127,34 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 				throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
 			}
 
-			// Create the Dimension object.
-			$dimensionDate = new Dimension();
-			$dimensionDate->setName( 'ga:date' );
-			$dimensionPageTitle = new Dimension();
-			$dimensionPageTitle->setName( 'ga:pageTitle' );
-
-			// Create the DimensionFilterClause object.
-			// TODO Use unique custom dimension instead of ga:pageTitle and provide the instruction to the end-users.
+			// Create DimensionFilter
 			$dimensionFilter = new DimensionFilter();
-			$dimensionFilter->setDimensionName( 'ga:pageTitle' );
-			$dimensionFilter->setOperator( 'REGEXP' );
-			$dimensionFilter->setExpressions( [
-				'^' . str_replace( '_', ' ', $title->getPrefixedDBkey() ) . ' - [^-]+$' ] );
+			if ( $readCustomDimensions ) {
+				// Use custom dimensions instead of ga:pageTitle
+				$dimensionFilter->setDimensionName( $this->getGAName( 'mw:page_title' ) );
+				$dimensionFilter->setOperator( 'EXACT' );
+				$dimensionFilter->setExpressions( [ $title->getPrefixedDBkey() ] );
+			} else {
+				// Use regular expression to filter the title.
+				// This is not the ideal approach and maybe fails for some titles.
+				$dimensionFilter->setDimensionName( 'ga:pageTitle' );
+				$dimensionFilter->setOperator( 'REGEXP' );
+				$dimensionFilter->setExpressions( [
+					'^' . str_replace( '_', ' ', $title->getPrefixedDBkey() ) . ' - [^-]+$' ] );
+			}
+			// Create DimensionFilterClause
 			$dimensionFilterClause = new DimensionFilterClause();
 			$dimensionFilterClause->setFilters( [ $dimensionFilter ] );
 
-			// Create the ReportRequest object.
+			// Create ReportRequest
 			$request = new ReportRequest();
 			$request->setViewId( $this->profileId );
 			$request->setDateRanges( [ $dateRange ] );
 			$request->setMetrics( [ $gaMetric ] );
-			$request->setDimensions( [ $dimensionDate, $dimensionPageTitle ] );
+			$request->setDimensions( $this->createDimensions( [
+				'ga:date',
+				$readCustomDimensions ? $this->getGAName( 'mw:page_title' ) : 'ga:pageTitle',
+			] ) );
 			$request->setDimensionFilterClauses( [ $dimensionFilterClause ] );
 
 			$requests[] = $request;
@@ -164,25 +167,28 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 			try {
 				$reports = $this->analytics->reports->batchGet( $body )->getReports();
-				foreach ( $reports as $rep ) {
-					$rows = $rep->getData()->getRows();
-					foreach ( $rows as $row ) {
-						if ( !( $row instanceof ReportRow ) ) {
-							continue;
-						}
-						$ts = $row->getDimensions()[0];
-						$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
-						$count = (int)$row->getMetrics()[0]->getValues()[0];
-						$title = $this->pageTitleForMW( $row->getDimensions()[1] );
-
-						$result[$title][$day] = $count;
-						$status->success[$title] = true;
-					}
-				}
-			} catch ( RuntimeException $e ) {
+			} catch ( \Google\Service\Exception $e ) {
 				$status->error( 'pvi-invalidresponse' );
-				foreach ( $titles as $title ) {
-					$status->success[$title->getPrefixedDBkey()] = false;
+			}
+
+			foreach ( $reports as $rep ) {
+				$rows = $rep->getData()->getRows();
+				if ( !$rows || !is_array( $rows ) ) {
+					continue;
+				}
+				foreach ( $rows as $row ) {
+					if ( !( $row instanceof ReportRow ) ) {
+						continue;
+					}
+					$ts = $row->getDimensions()[0];
+					$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
+					$count = (int)$row->getMetrics()[0]->getValues()[0];
+					$title = $row->getDimensions()[1];
+					if ( !$readCustomDimensions ) {
+						$title = $this->pageTitleForMW( $title );
+					}
+					$result[$title][$day] = $count;
+					$status->success[$title] = true;
 				}
 			}
 		}
@@ -279,7 +285,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 		// Create the Dimension object.
 		$dimension = new Dimension();
-		$dimension->setName( 'ga:pageTitle' );
+		$dimension->setName( $this->readCustomDimensions ? $this->getGAName( 'mw:page_title' ) : 'ga:pageTitle' );
 
 		// Create the ReportRequest object.
 		$request = new ReportRequest();
@@ -308,6 +314,15 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			$status->fatal( 'pvi-invalidresponse' );
 		}
 		return $status;
+	}
+
+	/**
+	 * @param string $mwName
+	 * @return string
+	 */
+	protected function getGAName( $mwName ) {
+		$flipped = array_flip( $this->customMap );
+		return 'ga:' . $flipped[$mwName];
 	}
 
 	/**
@@ -372,5 +387,19 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		$title = preg_replace( '/ /', '_', $title );
 
 		return $title;
+	}
+
+	/**
+	 * @param string[] $names
+	 * @return Dimension[]
+	 */
+	protected function createDimensions( $names ) {
+		$dimensions = [];
+		foreach ( $names as $name ) {
+			$dimension = new Dimension();
+			$dimension->setName( $name );
+			$dimensions[] = $dimension;
+		}
+		return $dimensions;
 	}
 }

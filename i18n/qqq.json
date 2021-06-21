@@ -1,12 +1,8 @@
 {
 	"@metadata": {
-		"authors": []
+		"authors": [
+			"렌즈"
+		]
 	},
-	"unifiedextensionforfemiwiki-desc": "{{desc|what=extension|name=UnifiedExtensionForFemiwiki}}",
-	"femiwiki-terms-label": "Used as page name and link at the bottom of each wiki page. The page contains wiki's terms.",
-	"femiwiki-terms-page": "{{doc-important|Do not change the <code>Project:</code> part.}}\nUsed as page for that contains the terms. Used at the bottom of every page on the wiki.\n\nExample: [[{{MediaWiki:Terms}}|{{MediaWiki:Terms}}]].",
-	"femiwiki-support-label": "Used as page name and link at the bottom of each wiki page. The page is a support desk.",
-	"femiwiki-support-page": "{{doc-important|Do not change the <code>Project:</code> part.}}\nUsed as page for support desk. Used at the bottom of every page on the wiki.\n\nExample: [[{{MediaWiki:Support}}|{{MediaWiki:Support}}]].",
-	"unifiedextensionforfemiwiki-createaccount": "A QuestyCaptcha question written by FemiWiki shown to users trying to create a new account.",
-	"unifiedextensionforfemiwiki-createaccount-fail": "Used as failure message."
+	"pageviewinfoga-desc": "{{desc|what=extension|name=PageViewInfoGA}}"
 }

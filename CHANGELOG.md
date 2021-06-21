@@ -2,66 +2,10 @@
 
 Versions and bullets are arranged chronologically from latest to oldest.
 
-## Unreleased
+## v0.1.0 (Unreleased)
 
-- Queries more fields of RelatedArticles to fix cache.
-- Adds custom dimensions to GoogleAnalytics.
-
-## v1.2.2
-
-- Adds a configuration for disabling adding links as RelatedArticles.
-
-## v1.2.1
-
-- Limits related articles order by category asc and adds a configuration variable `$wgUnifiedExtensionForFemiwikiRelatedArticlesTargetNamespaces` to scope target namespaces.
-- Group requests of GoogleAnalytics to 5 to reduce the latency.
-- Filters empty strings from RelatedArticles. (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/42)
-
-## v1.2.0
-
-- Implements GoogleAnalyticsPageViewService.
-- Uses $wgRelatedArticlesCardLimit for RelatedArticles.
-- Shows links on a page as RelatedArticles.
-
-## v1.1.1
-
-- Adds omitted prefix in RelatedArticles.
-
-## v1.1.0
-
-- Adds backlinks as RelatedArticles.
-
-## v1.0.7
-
-- Fixes Call to a member function on null (https://github.com/femiwiki/UnifiedExtensionForFemiwiki/issues/39)
-
-## v1.0.6
-
-- Updates copied code to REL1_36.
-
-## v1.0.5
-
-Note: this version requires MediaWiki 1.36+. Earlier versions are no longer supported.
-If you still use those versions of MediaWiki, please use REL1_35 branch instead of this release.
-
-In addition, your LocalSettings.php must be update due to changes of [Dependency Injection] in MediaWiki 1.36:
-
-```php
-$wgSpecialPages['Whatlinkshere'] = [
-	'class' => 'SpecialOrderedWhatLinksHere',
-	'services' => [
-		'DBLoadBalancer',
-		'LinkBatchFactory',
-		'ContentHandlerFactory',
-		'SearchEngineFactory',
-		'NamespaceInfo',
-	]
-];
-```
-
-ENHANCEMENTS:
-
-- Localisation updates from https://translatewiki.net.
+- Provides the snippet for Google Tag Manager.
+- Supports to write/read custom dimensions.
 
 ## Previous Releases
 
