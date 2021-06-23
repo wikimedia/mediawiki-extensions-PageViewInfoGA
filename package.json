@@ -3,9 +3,9 @@
   "scripts": {
     "test": "npm -s run lint",
     "lint": "npm -s run lint:prettier && npm -s run lint:i18n",
-    "lint:prettier": "prettier '**/*.{js,json,css,less,md,yml,xml}' --check",
+    "lint:prettier": "prettier . --check",
     "lint:i18n": "banana-checker --requireLowerCase=0 i18n/",
-    "fix": "prettier '**/*.{js,json,css,less,md,yml,xml}' --write"
+    "fix": "prettier . --write"
   },
   "devDependencies": {
     "@prettier/plugin-xml": "^0.13.1",
