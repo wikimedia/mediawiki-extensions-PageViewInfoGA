@@ -48,6 +48,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	/** @var array Cache for getEmptyDateRange() */
 	protected $range;
 
+	/** Google Analytics API restricts number of requests up to 5. */
 	public const MAX_REQUEST = 5;
 
 	/**
@@ -102,10 +103,6 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		}
 
 		$readCustomDimensions = $this->readCustomDimensions;
-		$status = StatusValue::newGood();
-		foreach ( $titles as $title ) {
-			$status->success[$title->getPrefixedDBkey()] = false;
-		}
 		$result = [];
 		$requests = [];
 		foreach ( $titles as $title ) {
@@ -159,15 +156,27 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			$requests[] = $request;
 		}
 
+		$status = StatusValue::newGood();
 		for ( $i = 0; $i < count( $requests ); $i += self::MAX_REQUEST ) {
-			$req = array_slice( $requests, $i, self::MAX_REQUEST );
+			$reqs = array_slice( $requests, $i, self::MAX_REQUEST );
 			$body = new GetReportsRequest();
-			$body->setReportRequests( $req );
+			$body->setReportRequests( $reqs );
 
 			$reports = [];
 			try {
 				$reports = $this->analytics->reports->batchGet( $body )->getReports();
 			} catch ( \Google\Service\Exception $e ) {
+				foreach ( self::extractExpressionsFromRequests( $reqs ) as $exp ) {
+					if ( !$readCustomDimensions ) {
+						// $exp is a regular expression for title, strip.
+						preg_match( '/\^(.+) - \[\^-\]\+\$/', $exp, $matches );
+						if ( !$matches ) {
+							continue;
+						}
+						$exp = $matches[1];
+					}
+					$status->success[$exp] = false;
+				}
 				$status->error( 'pvi-invalidresponse' );
 			}
 
@@ -314,6 +323,24 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 			$status->fatal( 'pvi-invalidresponse' );
 		}
 		return $status;
+	}
+
+	/**
+	 * @param ReportRequest[] $requests
+	 * @return string[]
+	 */
+	protected static function extractExpressionsFromRequests( $requests ) {
+		$exps = [];
+		foreach ( $requests as $req ) {
+			foreach ( $req->getDimensionFilterClauses() as $clause ) {
+				foreach ( $clause->getFilters() as $filter ) {
+					foreach ( $filter->getExpressions() as $exp ) {
+						$exps[] = $exp;
+					}
+				}
+			}
+		}
+		return $exps;
 	}
 
 	/**
