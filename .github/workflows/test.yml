@@ -17,7 +17,7 @@ on:
 env:
   DOCKER_REGISTRY: docker-registry.wikimedia.org
   DOCKER_ORG: releng
-  QUIBBLE_DOCKER_IMAGE: quibble-stretch-php73
+  QUIBBLE_DOCKER_IMAGE: quibble-buster-php73
   COVERAGE_DOCKER_IMAGE: quibble-coverage
   PHAN_DOCKER_IMAGE: mediawiki-phan-php73
 
@@ -33,8 +33,8 @@ jobs:
           - phpunit-standalone
           - npm-test
           - composer-test
+          - selenium
           # - qunit
-          # - selenium
           # - api-testing
 
     runs-on: ubuntu-latest
@@ -129,6 +129,7 @@ jobs:
               git clone --recurse-submodules -b "${MEDIAWIKI_VERSION}" --depth 1 "https://gerrit.wikimedia.org/r/${dep}" src/"$(echo $dep | cut -d'/' -f2,3)"
             done
           fi
+          git -C src/ log -n 1 --format="%H"
 
       - name: Cache dependencies (composer and npm)
         uses: actions/cache@v2
@@ -203,7 +204,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.stage == 'coverage' }}
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           directory: /home/runner/cover
 
