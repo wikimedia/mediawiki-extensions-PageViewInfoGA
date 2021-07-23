@@ -1,16 +1,13 @@
 <?php
 
-namespace MediaWiki\Extension\PageViewInfoGA;
+namespace MediaWiki\Extension\PageViewInfoGA\Hooks;
 
 use Config;
 use Html;
-use MediaWiki\Extensions\PageViewInfo\CachedPageViewService;
-use MediaWiki\Logger\LoggerFactory;
-use ObjectCache;
+use MediaWiki\Extension\PageViewInfoGA\Constants;
 
-class Hooks implements
-	\MediaWiki\Hook\BeforePageDisplayHook,
-	\MediaWiki\Hook\MediaWikiServicesHook
+class Main implements
+	\MediaWiki\Hook\BeforePageDisplayHook
 	{
 	/**
 	 * @var Config
@@ -80,47 +77,5 @@ class Hooks implements
 		$jsMap = implode( ',', $jsMap );
 		$jsMap = '{' . $jsMap . '}';
 		return $jsMap;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function onMediaWikiServices( $services ) {
-		$config = $this->config;
-		$profileId = $config->get( Constants::CONFIG_KEY_PROFILE_ID );
-		if ( !$profileId ) {
-			return;
-		}
-		$credentialsFile = $config->get( Constants::CONFIG_KEY_CREDENTIALS_FILE );
-		$customMap = $config->get( Constants::CONFIG_KEY_CUSTOM_MAP );
-		$readCustomDimensions = $config->get( Constants::CONFIG_KEY_READ_CUSTOM_DIMENSIONS );
-		$cache = ObjectCache::getLocalClusterInstance();
-		$logger = LoggerFactory::getInstance( 'PageViewInfoGA' );
-		$cachedDays = max( 30, $config->get( 'PageViewApiMaxDays' ) );
-
-		$services->redefineService(
-			'PageViewService',
-			static function () use (
-				$credentialsFile,
-				$profileId,
-				$customMap,
-				$readCustomDimensions,
-				$cache,
-				$logger,
-				$cachedDays
-				) {
-				$service = new GoogleAnalyticsPageViewService( [
-					'credentialsFile' => $credentialsFile,
-					'profileId' => $profileId,
-					'customMap' => $customMap,
-					'readCustomDimensions' => $readCustomDimensions,
-				] );
-
-				$cachedService = new CachedPageViewService( $service, $cache );
-				$cachedService->setCachedDays( $cachedDays );
-				$cachedService->setLogger( $logger );
-				return $cachedService;
-			}
-		);
 	}
 }

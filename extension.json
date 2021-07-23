@@ -16,13 +16,16 @@
   },
   "HookHandlers": {
     "default": {
-      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks",
+      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\Main",
       "services": ["MainConfig"]
+    },
+    "MediaWikiServices": {
+      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\MediaWikiServices"
     }
   },
   "Hooks": {
     "BeforePageDisplay": "default",
-    "MediaWikiServices": "default"
+    "MediaWikiServices": "MediaWikiServices"
   },
   "MessagesDirs": {
     "PageViewInfoGA": ["i18n"]
