@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"DDPAT"
+		]
+	},
+	"pageviewinfoga-desc": "Реалізує службу PageView для Google Analytics."
+}
