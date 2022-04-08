@@ -2,8 +2,8 @@
 
 namespace MediaWiki\Extension\PageViewInfoGA\Hooks;
 
+use MediaWiki\Extension\PageViewInfo\CachedPageViewService;
 use MediaWiki\Extension\PageViewInfoGA\GoogleAnalyticsPageViewService;
-use MediaWiki\Extensions\PageViewInfo\CachedPageViewService;
 use MediaWiki\Logger\LoggerFactory;
 use ObjectCache;
 
