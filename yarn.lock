@@ -24,10 +24,10 @@ chevrotain@7.1.1:
   dependencies:
     regexp-to-ast "0.5.0"
 
-grunt-banana-checker@0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/grunt-banana-checker/-/grunt-banana-checker-0.9.0.tgz#0b58cf59ae773c12d26ead8e797f7bbfbde85939"
-  integrity sha512-SqPiB6OazWqR8USL0NymtuT5Br3mD9WBBsM1rHC/3wIi2SrZNM6/+j9CIeuEM5oCn+AtO2Y0+rzzFyOdC9afAg==
+grunt-banana-checker@0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/grunt-banana-checker/-/grunt-banana-checker-0.10.0.tgz#eb494e157819b7548f7a1a65f1a6bdeeb5dc0a20"
+  integrity sha512-Sx+P3zWjn4YmBCqzidnCEkYrACe1SLTIT8kKC6C3f21Hu6sm17U/V+re343cuK3U+iGZv15ux6bY+69buIbYrA==
 
 prettier@>=1.10, prettier@^2.3.1:
   version "2.3.1"
