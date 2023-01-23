@@ -201,6 +201,14 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 				}
 			}
 		}
+
+		// Fills success even if the title is not included in responses.
+		// https://github.com/femiwiki/PageViewInfoGA/issues/46
+		foreach ( $titles as $title ) {
+			if ( !in_array( $title, $status->success ) ) {
+				$status->success[$title->getPrefixedDBkey()] = false;
+			}
+		}
 		$status->successCount = count( array_filter( $status->success ) );
 		$status->failCount = count( $status->success ) - $status->successCount;
 		$status->setResult( (bool)$status->successCount, $result );
