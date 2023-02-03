@@ -2,18 +2,18 @@
 # yarn lockfile v1
 
 
-"@prettier/plugin-xml@^0.13.1":
-  version "0.13.1"
-  resolved "https://registry.yarnpkg.com/@prettier/plugin-xml/-/plugin-xml-0.13.1.tgz#fb1c265fb8256c509da187b5a530c3eb2bf80091"
-  integrity sha512-jJbjvFEsxOT2Jhv2yydOvJbnSREJy+OECwHyZaYr05jLXlJeBrzy5YY1fDYpwTfKk1B2YqNExXI+x3Zm5yGfeA==
+"@prettier/plugin-xml@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@prettier/plugin-xml/-/plugin-xml-2.2.0.tgz#2bc2ae667aa817369fdb939aa7d36ea88105483d"
+  integrity sha512-UWRmygBsyj4bVXvDiqSccwT1kmsorcwQwaIy30yVh8T+Gspx4OlC0shX1y+ZuwXZvgnafmpRYKks0bAu9urJew==
   dependencies:
-    "@xml-tools/parser" "^1.0.2"
-    prettier ">=1.10"
+    "@xml-tools/parser" "^1.0.11"
+    prettier ">=2.4.0"
 
-"@xml-tools/parser@^1.0.2":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@xml-tools/parser/-/parser-1.0.10.tgz#d1dd3a4323d713fcca5279005c96b37058ccbc33"
-  integrity sha512-9oRb68wEKT+MRB7e2GwTiKicRKVXKzquBDGgH6YcGafvnSYXorWi2oaTVtbv2109RlGiQSnoXaQFUXCnHwFS7Q==
+"@xml-tools/parser@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@xml-tools/parser/-/parser-1.0.11.tgz#a118a14099ea5c3c537e4781fad2fc195b57f8ff"
+  integrity sha512-aKqQ077XnR+oQtHJlrAflaZaL7qZsulWc/i/ZEooar5JiWj1eLt0+Wg28cpa+XLney107wXqneC+oG1IZvxkTA==
   dependencies:
     chevrotain "7.1.1"
 
@@ -29,7 +29,7 @@ grunt-banana-checker@0.10.0:
   resolved "https://registry.yarnpkg.com/grunt-banana-checker/-/grunt-banana-checker-0.10.0.tgz#eb494e157819b7548f7a1a65f1a6bdeeb5dc0a20"
   integrity sha512-Sx+P3zWjn4YmBCqzidnCEkYrACe1SLTIT8kKC6C3f21Hu6sm17U/V+re343cuK3U+iGZv15ux6bY+69buIbYrA==
 
-prettier@>=1.10, prettier@^2.8.1:
+prettier@>=2.4.0, prettier@^2.8.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.1.tgz#4e1fd11c34e2421bc1da9aea9bd8127cd0a35efc"
   integrity sha512-lqGoSJBQNJidqCHE80vqZJHWHRFoNYsSpP9AjFhlhi9ODCJA541svILes/+/1GM3VaL/abZi7cpFzOpdR9UPKg==
