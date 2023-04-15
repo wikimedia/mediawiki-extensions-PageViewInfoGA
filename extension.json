@@ -1,65 +1,65 @@
 {
-  "name": "PageViewInfoGA",
-  "version": "0.1.2",
-  "author": "[https://femiwiki.com/ Femiwiki Team]",
-  "url": "https://github.com/femiwiki/PageViewInfoGA",
-  "descriptionmsg": "pageviewinfoga-desc",
-  "license-name": "AGPL-3.0-or-later",
-  "requires": {
-    "MediaWiki": ">= 1.36.0",
-    "extensions": {
-      "PageViewInfo": "*"
-    }
-  },
-  "AutoloadNamespaces": {
-    "MediaWiki\\Extension\\PageViewInfoGA\\": "src/"
-  },
-  "HookHandlers": {
-    "default": {
-      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\Main",
-      "services": ["MainConfig"]
-    },
-    "MediaWikiServices": {
-      "class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\MediaWikiServices"
-    }
-  },
-  "Hooks": {
-    "BeforePageDisplay": "default",
-    "MediaWikiServices": "MediaWikiServices"
-  },
-  "MessagesDirs": {
-    "PageViewInfoGA": ["i18n"]
-  },
-  "config": {
-    "PageViewInfoGATrackingID": {
-      "value": false
-    },
-    "PageViewInfoGACredentialsFile": {
-      "value": false,
-      "description": "The file name of the credentials from the Google API Console."
-    },
-    "PageViewInfoGAProfileId": {
-      "value": false,
-      "description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID."
-    },
-    "PageViewInfoGAWriteCustomDimensions": {
-      "value": true,
-      "description": "Send custom dimensions MediaWiki-readable page id and page title."
-    },
-    "PageViewInfoGAWriteCustomMap": {
-      "value": {
-        "dimension1": "mw:page_id",
-        "dimension2": "mw:page_title"
-      }
-    },
-    "PageViewInfoGAReadCustomDimensions": {
-      "value": false,
-      "description": "Use custom dimensions require additional installation steps."
-    }
-  },
-  "load_composer_autoloader": true,
-  "TestAutoloadNamespaces": {
-    "MediaWiki\\Extension\\PageViewInfoGA\\Tests\\Unit\\": "tests/phpunit/unit/"
-  },
-  "manifest_version": 2
+	"name": "PageViewInfoGA",
+	"version": "0.1.2",
+	"author": "[https://femiwiki.com/ Femiwiki Team]",
+	"url": "https://github.com/femiwiki/PageViewInfoGA",
+	"descriptionmsg": "pageviewinfoga-desc",
+	"license-name": "AGPL-3.0-or-later",
+	"requires": {
+		"MediaWiki": ">= 1.36.0",
+		"extensions": {
+			"PageViewInfo": "*"
+		}
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\PageViewInfoGA\\": "src/"
+	},
+	"HookHandlers": {
+		"default": {
+			"class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\Main",
+			"services": [ "MainConfig" ]
+		},
+		"MediaWikiServices": {
+			"class": "MediaWiki\\Extension\\PageViewInfoGA\\Hooks\\MediaWikiServices"
+		}
+	},
+	"Hooks": {
+		"BeforePageDisplay": "default",
+		"MediaWikiServices": "MediaWikiServices"
+	},
+	"MessagesDirs": {
+		"PageViewInfoGA": [ "i18n" ]
+	},
+	"config": {
+		"PageViewInfoGATrackingID": {
+			"value": false
+		},
+		"PageViewInfoGACredentialsFile": {
+			"value": false,
+			"description": "The file name of the credentials from the Google API Console."
+		},
+		"PageViewInfoGAProfileId": {
+			"value": false,
+			"description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID."
+		},
+		"PageViewInfoGAWriteCustomDimensions": {
+			"value": true,
+			"description": "Send custom dimensions MediaWiki-readable page id and page title."
+		},
+		"PageViewInfoGAWriteCustomMap": {
+			"value": {
+				"dimension1": "mw:page_id",
+				"dimension2": "mw:page_title"
+			}
+		},
+		"PageViewInfoGAReadCustomDimensions": {
+			"value": false,
+			"description": "Use custom dimensions require additional installation steps."
+		}
+	},
+	"load_composer_autoloader": true,
+	"TestAutoloadNamespaces": {
+		"MediaWiki\\Extension\\PageViewInfoGA\\Tests\\Unit\\": "tests/phpunit/unit/"
+	},
+	"manifest_version": 2
 }

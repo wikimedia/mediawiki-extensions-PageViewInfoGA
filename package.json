@@ -1,15 +1,17 @@
 {
-  "private": true,
-  "scripts": {
-    "test": "npm -s run lint",
-    "lint": "npm -s run lint:prettier && npm -s run lint:i18n",
-    "lint:prettier": "prettier . --check",
-    "lint:i18n": "banana-checker --requireLowerCase=0 i18n/",
-    "fix": "prettier . --write"
-  },
-  "devDependencies": {
-    "@prettier/plugin-xml": "^2.2.0",
-    "grunt-banana-checker": "0.10.0",
-    "prettier": "^2.8.1"
-  }
+	"private": true,
+	"scripts": {
+		"test": "grunt test"
+	},
+	"devDependencies": {
+		"eslint-config-wikimedia": "0.24.0",
+		"grunt": "1.6.1",
+		"grunt-banana-checker": "0.10.0",
+		"grunt-eslint": "24.0.0",
+		"grunt-stylelint": "0.18.0",
+		"stylelint-config-wikimedia": "0.14.0"
+	},
+	"eslintIgnore": [
+		"vendor/**"
+	]
 }
