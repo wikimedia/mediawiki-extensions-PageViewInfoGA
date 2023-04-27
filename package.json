@@ -1,4 +1,5 @@
 {
+	"name": "PageViewInfoGA",
 	"private": true,
 	"scripts": {
 		"test": "grunt test"

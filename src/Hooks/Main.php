@@ -26,7 +26,7 @@ class Main implements
 	 *
 	 * @inheritDoc
 	 */
-	public function onBeforePageDisplay( $out, $skin ) : void {
+	public function onBeforePageDisplay( $out, $skin ): void {
 		$trackingID = $this->config->get( Constants::CONFIG_KEY_TRACKING_ID );
 		if ( !$trackingID ) {
 			return;
