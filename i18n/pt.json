@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Hamilton Abreu"
+		]
+	},
+	"pageviewinfoga-desc": "Implementa PageViewService para GoogleAnalytics."
+}
