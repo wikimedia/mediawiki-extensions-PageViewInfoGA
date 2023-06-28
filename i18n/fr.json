@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Gomoko"
+			"Gomoko",
+			"Verdy p"
 		]
 	},
-	"pageviewinfoga-desc": "Implémente PageViewService pour GoogleAnalytics."
+	"pageviewinfoga-desc": "Met en œuvre PageViewService pour GoogleAnalytics."
 }
