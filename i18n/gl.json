@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Toliño"
+		]
+	},
+	"pageviewinfoga-desc": "Implementa o servizo PageViewService para GoogleAnalytics."
+}
