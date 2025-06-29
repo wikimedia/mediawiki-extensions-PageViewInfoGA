@@ -2,9 +2,9 @@
 
 namespace MediaWiki\Extension\PageViewInfoGA\Hooks;
 
-use Config;
-use Html;
+use MediaWiki\Config\Config;
 use MediaWiki\Extension\PageViewInfoGA\Constants;
+use MediaWiki\Html\Html;
 
 class Main implements
 	\MediaWiki\Hook\BeforePageDisplayHook

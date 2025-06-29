@@ -15,11 +15,11 @@ use Google\Service\AnalyticsReporting\ReportRequest;
 use Google\Service\AnalyticsReporting\ReportRow;
 use InvalidArgumentException;
 use MediaWiki\Extension\PageViewInfo\PageViewService;
+use MediaWiki\Status\Status;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
-use Status;
 use StatusValue;
 
 /**
