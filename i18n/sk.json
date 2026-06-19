@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Wizzard"
+		]
+	},
+	"pageviewinfoga-desc": "Implementuje PageViewService pre GoogleAnalytics."
+}
