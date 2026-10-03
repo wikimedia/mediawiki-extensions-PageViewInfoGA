@@ -3,53 +3,56 @@
 namespace MediaWiki\Extension\PageViewInfoGA\Hooks;
 
 use MediaWiki\Extension\PageViewInfo\CachedPageViewService;
+use MediaWiki\Extension\PageViewInfoGA\Constants;
 use MediaWiki\Extension\PageViewInfoGA\GoogleAnalyticsPageViewService;
+use MediaWiki\Extension\PageViewInfoGA\ServiceAccountTokenProvider;
 use MediaWiki\Logger\LoggerFactory;
-use ObjectCache;
+use MediaWiki\MainConfigNames;
+use MediaWiki\MediaWikiServices as MediaWikiServicesContainer;
 
 class MediaWikiServices implements \MediaWiki\Hook\MediaWikiServicesHook {
 
 	/**
+	 * Replace PageViewInfo's Wikimedia backend when a GA4 property is configured.
+	 *
 	 * @inheritDoc
 	 */
 	public function onMediaWikiServices( $services ) {
-		global $wgPageViewInfoGAProfileId,
-			$wgPageViewInfoGACredentialsFile,
-			$wgPageViewInfoGAWriteCustomMap,
-			$wgPageViewInfoGAReadCustomDimensions,
-			$wgPageViewApiMaxDays;
-
-		$profileId = $wgPageViewInfoGAProfileId;
-		if ( !$profileId ) {
+		if ( !$services->getMainConfig()->get( Constants::CONFIG_KEY_PROPERTY_ID ) ) {
 			return;
 		}
-		$credentialsFile = $wgPageViewInfoGACredentialsFile;
-		$customMap = $wgPageViewInfoGAWriteCustomMap;
-		$readCustomDimensions = $wgPageViewInfoGAReadCustomDimensions;
-		$cache = ObjectCache::getLocalClusterInstance();
-		$logger = LoggerFactory::getInstance( 'PageViewInfoGA' );
-		$cachedDays = max( 30, $wgPageViewApiMaxDays );
 
 		$services->redefineService(
 			'PageViewService',
-			static function () use (
-				$credentialsFile,
-				$profileId,
-				$customMap,
-				$readCustomDimensions,
-				$cache,
-				$logger,
-				$cachedDays
-				) {
-				$service = new GoogleAnalyticsPageViewService( [
-					'credentialsFile' => $credentialsFile,
-					'profileId' => $profileId,
-					'customMap' => $customMap,
-					'readCustomDimensions' => $readCustomDimensions,
-				] );
+			static function ( MediaWikiServicesContainer $services ) {
+				$config = $services->getMainConfig();
+				$logger = LoggerFactory::getInstance( 'PageViewInfoGA' );
+				$cache = $services->getObjectCacheFactory()->getLocalClusterInstance();
+				$titleFormatter = $services->getTitleFormatter();
 
-				$cachedService = new CachedPageViewService( $service, $cache );
-				$cachedService->setCachedDays( $cachedDays );
+				$tokenProvider = new ServiceAccountTokenProvider(
+					$services->getHttpRequestFactory(),
+					$cache,
+					(string)$config->get( Constants::CONFIG_KEY_CREDENTIALS_FILE ),
+					GoogleAnalyticsPageViewService::SCOPE
+				);
+				$tokenProvider->setLogger( $logger );
+
+				$service = new GoogleAnalyticsPageViewService(
+					$services->getHttpRequestFactory(),
+					$titleFormatter,
+					$services->getPageStore(),
+					$tokenProvider,
+					[
+						'propertyId' => $config->get( Constants::CONFIG_KEY_PROPERTY_ID ),
+						'siteName' => $config->get( MainConfigNames::Sitename ),
+						'readCustomDimensions' => $config->get( Constants::CONFIG_KEY_READ_CUSTOM_DIMENSIONS ),
+					]
+				);
+				$service->setLogger( $logger );
+
+				$cachedService = new CachedPageViewService( $service, $cache, $titleFormatter );
+				$cachedService->setCachedDays( max( 30, $config->get( 'PageViewApiMaxDays' ) ) );
 				$cachedService->setLogger( $logger );
 				return $cachedService;
 			}

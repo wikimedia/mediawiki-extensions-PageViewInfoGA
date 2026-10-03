@@ -1,12 +1,12 @@
 {
 	"name": "PageViewInfoGA",
-	"version": "0.1.2",
+	"version": "1.0.0",
 	"author": "[https://femiwiki.com/ Femiwiki Team]",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageViewInfoGA",
 	"descriptionmsg": "pageviewinfoga-desc",
 	"license-name": "AGPL-3.0-or-later",
 	"requires": {
-		"MediaWiki": ">= 1.41.0",
+		"MediaWiki": ">= 1.46.0",
 		"extensions": {
 			"PageViewInfo": "*"
 		}
@@ -32,32 +32,26 @@
 	},
 	"config": {
 		"PageViewInfoGATrackingID": {
-			"value": false
+			"value": false,
+			"description": "Measurement ID of the GA4 web data stream, like G-XXXXXXXXXX, to add the Google tag to every page. False adds no tag."
 		},
 		"PageViewInfoGACredentialsFile": {
 			"value": false,
-			"description": "The file name of the credentials from the Google API Console."
+			"description": "Path to the JSON key file of a Google Cloud service account that has the Viewer role on the GA4 property."
 		},
-		"PageViewInfoGAProfileId": {
+		"PageViewInfoGAPropertyId": {
 			"value": false,
-			"description": "Profile(View) ID of the Google Analytics View. You can use the Account Explorer to find a View ID."
+			"description": "ID of the GA4 property to read page views from, like 123456789. False keeps PageViewInfo's own backend."
 		},
 		"PageViewInfoGAWriteCustomDimensions": {
 			"value": true,
-			"description": "Send custom dimensions MediaWiki-readable page id and page title."
-		},
-		"PageViewInfoGAWriteCustomMap": {
-			"value": {
-				"dimension1": "mw:page_id",
-				"dimension2": "mw:page_title"
-			}
+			"description": "Send the page ID as the mw_page_id event parameter."
 		},
 		"PageViewInfoGAReadCustomDimensions": {
 			"value": false,
-			"description": "Use custom dimensions require additional installation steps."
+			"description": "Match pages by the mw_page_id event-scoped custom dimension instead of by the page title, so that counts follow page moves. Register the custom dimension in GA4 first. Matching by title misses older events from pages with {{DISPLAYTITLE:}} and from the main page."
 		}
 	},
-	"load_composer_autoloader": true,
 	"TestAutoloadNamespaces": {
 		"MediaWiki\\Extension\\PageViewInfoGA\\Tests\\Unit\\": "tests/phpunit/unit/"
 	},

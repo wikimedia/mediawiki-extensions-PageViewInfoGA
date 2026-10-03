@@ -18,7 +18,7 @@ final class Constants {
 	/**
 	 * @var string
 	 */
-	public const CONFIG_KEY_PROFILE_ID = 'PageViewInfoGAProfileId';
+	public const CONFIG_KEY_PROPERTY_ID = 'PageViewInfoGAPropertyId';
 
 	/**
 	 * @var string
@@ -28,10 +28,11 @@ final class Constants {
 	/**
 	 * @var string
 	 */
-	public const CONFIG_KEY_CUSTOM_MAP = "PageViewInfoGAWriteCustomMap";
+	public const CONFIG_KEY_READ_CUSTOM_DIMENSIONS = 'PageViewInfoGAReadCustomDimensions';
 
 	/**
-	 * @var string
+	 * @var string GA4 event parameter the Google tag sends when custom dimensions are written.
+	 *   Register it as an event-scoped custom dimension under this name to read it back.
 	 */
-	public const CONFIG_KEY_READ_CUSTOM_DIMENSIONS = 'PageViewInfoGAReadCustomDimensions';
+	public const EVENT_PARAM_PAGE_ID = 'mw_page_id';
 }
