@@ -4,5 +4,6 @@
 			"렌즈"
 		]
 	},
-	"pageviewinfoga-desc": "{{desc|what=extension|name=PageViewInfoGA}}"
+	"pageviewinfoga-desc": "{{desc|what=extension|name=PageViewInfoGA}}",
+	"pageviewinfoga-error-credentials": "Error when the configured service account key file is missing, is not a service account key, or cannot sign. The server log names the file."
 }

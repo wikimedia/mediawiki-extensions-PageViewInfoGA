@@ -1,9 +1,6 @@
 {
 	"name": "femiwiki/page-view-info-ga",
 	"description": "Implements PageViewService for GoogleAnalytics",
-	"require": {
-		"google/apiclient": "^2.9"
-	},
 	"require-dev": {
 		"mediawiki/mediawiki-codesniffer": "52.0.0",
 		"mediawiki/mediawiki-phan-config": "0.20.0",
@@ -23,11 +20,6 @@
 		],
 		"phan": "phan -d . --long-progress-bar",
 		"phpcs": "phpcs -sp --cache"
-	},
-	"extra": {
-		"google/apiclient-services": [
-			"Analytics"
-		]
 	},
 	"config": {
 		"allow-plugins": {

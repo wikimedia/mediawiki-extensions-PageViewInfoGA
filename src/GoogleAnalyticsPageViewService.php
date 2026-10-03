@@ -2,90 +2,92 @@
 
 namespace MediaWiki\Extension\PageViewInfoGA;
 
-use Google\Client;
-use Google\Service\AnalyticsReporting;
-use Google\Service\AnalyticsReporting\DateRange;
-use Google\Service\AnalyticsReporting\Dimension;
-use Google\Service\AnalyticsReporting\DimensionFilter;
-use Google\Service\AnalyticsReporting\DimensionFilterClause;
-use Google\Service\AnalyticsReporting\GetReportsRequest;
-use Google\Service\AnalyticsReporting\Metric;
-use Google\Service\AnalyticsReporting\OrderBy;
-use Google\Service\AnalyticsReporting\ReportRequest;
-use Google\Service\AnalyticsReporting\ReportRow;
 use InvalidArgumentException;
 use MediaWiki\Extension\PageViewInfo\PageViewService;
-use MediaWiki\Status\Status;
+use MediaWiki\Http\HttpRequestFactory;
+use MediaWiki\Json\FormatJson;
+use MediaWiki\Page\PageReference;
+use MediaWiki\Page\PageSelectQueryBuilder;
+use MediaWiki\Page\PageStore;
+use MediaWiki\Title\TitleFormatter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use RuntimeException;
 use StatusValue;
+use Wikimedia\Message\MessageParam;
 
 /**
- * PageViewService implementation for wikis using the Google Analytics
- * @see https://developers.google.com/analytics
+ * PageViewService implementation for wikis using Google Analytics 4, through the Google Analytics Data API
+ *
+ * GA4 counts days in the time zone of the property, which should be the wiki's $wgLocaltimezone.
+ * Like PageViewInfo's Wikimedia backend, the data ends with yesterday, whose counts can still
+ * grow while GA4 processes late events.
+ *
+ * @see https://developers.google.com/analytics/devguides/reporting/data/v1
  */
 class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInterface {
-	/** @var LoggerInterface */
-	protected $logger;
 
-	/** @var AnalyticsReporting */
-	protected $analytics;
+	public const SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
+	private const ENDPOINT = 'https://analyticsdata.googleapis.com/v1beta';
 
-	/** @var string Profile(View) ID of the Google Analytics View. */
-	protected $profileId;
+	/** Separators of the "pagetitle" message across languages: hyphen, en dash, em dash, middle dot */
+	private const SITE_NAME_SEPARATOR = '[-–—·]';
 
-	/** @var array */
-	protected $customMap;
+	/** The most rows one report returns */
+	private const ROW_LIMIT = 250000;
+	/** Pages per report, to keep each request and its filter small */
+	private const PAGES_PER_REPORT = 50;
+	/** Seconds to wait for a report */
+	private const TIMEOUT = 10;
 
-	/** @var bool */
-	protected $readCustomDimensions;
+	private LoggerInterface $logger;
 
-	/** @var int UNIX timestamp of 0:00 of the last day with complete data */
-	protected $lastCompleteDay;
+	/** @var string GA4 property ID, digits only */
+	private string $propertyId;
 
-	/** @var array Cache for getEmptyDateRange() */
-	protected $range;
+	private string $siteName;
 
-	/** Google Analytics API restricts number of requests up to 5. */
-	public const MAX_REQUEST = 5;
+	private bool $readCustomDimensions;
 
 	/**
-	 * @param array $options Associative array.
+	 * @param HttpRequestFactory $httpRequestFactory
+	 * @param TitleFormatter $titleFormatter
+	 * @param PageStore $pageStore
+	 * @param ServiceAccountTokenProvider $tokenProvider
+	 * @param array $options
+	 *   - propertyId: (string|int) GA4 property ID, like 123456789 or "properties/123456789"
+	 *   - siteName: (string) $wgSitename, which events from before the Google tag sent page_title
+	 *     carry in the document title
+	 *   - readCustomDimensions: (bool, default false) Match pages by the mw_page_id event
+	 *     parameter, registered as an event-scoped custom dimension, instead of by the page title.
+	 *     Page IDs follow a page when it is moved.
+	 * @phan-param array{propertyId:string|int,siteName:string,readCustomDimensions?:bool} $options
+	 * @throws InvalidArgumentException When propertyId is not a GA4 property ID
 	 */
-	public function __construct( array $options ) {
-		$this->verifyApiOptions( $options );
-
-		// Skip the current day for which only partial information is available
-		$this->lastCompleteDay = strtotime( '0:0 1 day ago' );
-
-		$this->logger = new NullLogger();
-
-		$client = new Client();
-		$client->setApplicationName( 'PageViewInfo' );
-		if ( $options['credentialsFile'] ) {
-			$client->setAuthConfig( $options['credentialsFile'] );
+	public function __construct(
+		private readonly HttpRequestFactory $httpRequestFactory,
+		private readonly TitleFormatter $titleFormatter,
+		private readonly PageStore $pageStore,
+		private readonly ServiceAccountTokenProvider $tokenProvider,
+		array $options
+	) {
+		// Accept "properties/123" as the API shows it
+		$propertyId = preg_replace( '/^properties\//', '', (string)( $options['propertyId'] ?? '' ) );
+		if ( !ctype_digit( $propertyId ) ) {
+			throw new InvalidArgumentException( "'propertyId' must be a GA4 property ID" );
 		}
-
-		$client->addScope( AnalyticsReporting::ANALYTICS_READONLY );
-		$this->analytics = new AnalyticsReporting( $client );
-
-		$this->profileId = $options['profileId'] ?? false;
-		$this->customMap = $options['customMap'] ?? false;
-		$this->readCustomDimensions = $options['readCustomDimensions'] ?? false;
+		$this->propertyId = $propertyId;
+		$this->siteName = (string)( $options['siteName'] ?? '' );
+		$this->readCustomDimensions = (bool)( $options['readCustomDimensions'] ?? false );
+		$this->logger = new NullLogger();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function setLogger( LoggerInterface $logger ): void {
 		$this->logger = $logger;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function supports( $metric, $scope ) {
 		return in_array( $metric, [ self::METRIC_VIEW, self::METRIC_UNIQUE ] ) &&
 			in_array( $scope, [ self::SCOPE_ARTICLE, self::SCOPE_TOP, self::SCOPE_SITE ] );
@@ -93,121 +95,27 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 
 	/**
 	 * @inheritDoc
+	 *
+	 * For METRIC_UNIQUE, the users of a page under page_title and under its document title are
+	 * added up, so a user counted under both counts twice.
 	 */
 	public function getPageData( array $titles, $days, $metric = self::METRIC_VIEW ) {
-		if ( !$titles ) {
-			return StatusValue::newGood( [] );
-		}
+		$gaMetric = self::getGAMetric( $metric );
 		if ( $days <= 0 ) {
 			throw new InvalidArgumentException( 'Invalid days: ' . $days );
 		}
-
-		$readCustomDimensions = $this->readCustomDimensions;
-		$result = [];
-		$requests = [];
-		foreach ( $titles as $title ) {
-			$result[$title->getPrefixedDBkey()] = $this->getEmptyDateRange( $days );
-
-			// Create DateRange
-			$dateRange = new DateRange();
-			$dateRange->setStartDate( $days . 'daysAgo' );
-			$dateRange->setEndDate( "1daysAgo" );
-
-			// Create Metrics
-			$gaMetric = new Metric();
-			if ( $metric === self::METRIC_VIEW ) {
-				$gaMetric->setExpression( 'ga:pageviews' );
-			} elseif ( $metric === self::METRIC_UNIQUE ) {
-				$gaMetric->setExpression( 'ga:uniquePageviews' );
-			} else {
-				throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
-			}
-
-			// Create DimensionFilter
-			$dimensionFilter = new DimensionFilter();
-			if ( $readCustomDimensions ) {
-				// Use custom dimensions instead of ga:pageTitle
-				$dimensionFilter->setDimensionName( $this->getGAName( 'mw:page_title' ) );
-				$dimensionFilter->setOperator( 'EXACT' );
-				$dimensionFilter->setExpressions( [ $title->getPrefixedDBkey() ] );
-			} else {
-				// Use regular expression to filter the title.
-				// This is not the ideal approach and maybe fails for some titles.
-				$dimensionFilter->setDimensionName( 'ga:pageTitle' );
-				$dimensionFilter->setOperator( 'REGEXP' );
-				$dimensionFilter->setExpressions( [
-					'^' . str_replace( '_', ' ', $title->getPrefixedDBkey() ) . ' - [^-]+$' ] );
-			}
-			// Create DimensionFilterClause
-			$dimensionFilterClause = new DimensionFilterClause();
-			$dimensionFilterClause->setFilters( [ $dimensionFilter ] );
-
-			// Create ReportRequest
-			$request = new ReportRequest();
-			$request->setViewId( $this->profileId );
-			$request->setDateRanges( [ $dateRange ] );
-			$request->setMetrics( [ $gaMetric ] );
-			$request->setDimensions( $this->createDimensions( [
-				'ga:date',
-				$readCustomDimensions ? $this->getGAName( 'mw:page_title' ) : 'ga:pageTitle',
-			] ) );
-			$request->setDimensionFilterClauses( [ $dimensionFilterClause ] );
-
-			$requests[] = $request;
+		if ( !$titles ) {
+			return StatusValue::newGood( [] );
 		}
 
+		$dates = $this->getDates( $days );
 		$status = StatusValue::newGood();
-		for ( $i = 0; $i < count( $requests ); $i += self::MAX_REQUEST ) {
-			$reqs = array_slice( $requests, $i, self::MAX_REQUEST );
-			$body = new GetReportsRequest();
-			$body->setReportRequests( $reqs );
-
-			$reports = [];
-			try {
-				$reports = $this->analytics->reports->batchGet( $body )->getReports();
-			} catch ( \Google\Service\Exception $e ) {
-				foreach ( self::extractExpressionsFromRequests( $reqs ) as $exp ) {
-					if ( !$readCustomDimensions ) {
-						// $exp is a regular expression for title, strip.
-						preg_match( '/\^(.+) - \[\^-\]\+\$/', $exp, $matches );
-						if ( !$matches ) {
-							continue;
-						}
-						$exp = $matches[1];
-					}
-					$status->success[$exp] = false;
-				}
-				$status->error( 'pvi-invalidresponse' );
-			}
-
-			foreach ( $reports as $rep ) {
-				$rows = $rep->getData()->getRows();
-				if ( !$rows || !is_array( $rows ) ) {
-					continue;
-				}
-				foreach ( $rows as $row ) {
-					if ( !( $row instanceof ReportRow ) ) {
-						continue;
-					}
-					$ts = $row->getDimensions()[0];
-					$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
-					$count = (int)$row->getMetrics()[0]->getValues()[0];
-					$title = $row->getDimensions()[1];
-					if ( !$readCustomDimensions ) {
-						$title = $this->pageTitleForMW( $title );
-					}
-					$result[$title][$day] = $count;
-					$status->success[$title] = true;
-				}
-			}
-		}
-
-		// Fills success even if the title is not included in responses.
-		// https://github.com/femiwiki/PageViewInfoGA/issues/46
-		foreach ( $titles as $title ) {
-			if ( !in_array( $title, $status->success ) ) {
-				$status->success[$title->getPrefixedDBkey()] = false;
-			}
+		$result = [];
+		foreach ( array_chunk( $titles, self::PAGES_PER_REPORT ) as $chunk ) {
+			$chunkStatus = $this->getChunkData( $chunk, $dates, $gaMetric );
+			$status->merge( $chunkStatus );
+			$status->success += $chunkStatus->success;
+			$result += $chunkStatus->getValue();
 		}
 		$status->successCount = count( array_filter( $status->success ) );
 		$status->failCount = count( $status->success ) - $status->successCount;
@@ -216,153 +124,141 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param PageReference[] $titles
+	 * @param string[] $dates YYYY-MM-DD, oldest first
+	 * @param string $gaMetric
+	 * @return StatusValue With per-title success, and the data of getPageData() as its value
 	 */
-	public function getSiteData( $days, $metric = self::METRIC_VIEW ) {
-		if ( $metric !== self::METRIC_VIEW && $metric !== self::METRIC_UNIQUE ) {
-			throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
-		}
-		if ( $days <= 0 ) {
-			throw new InvalidArgumentException( 'Invalid days: ' . $days );
-		}
-		$result = $this->getEmptyDateRange( $days );
-
-		// Create the DateRange object.
-		$dateRange = new DateRange();
-		$dateRange->setStartDate( $days . 'daysAgo' );
-		$dateRange->setEndDate( '1daysAgo' );
-
-		// Create the Metrics object.
-		$gaMetric = new Metric();
-		if ( $metric === self::METRIC_VIEW ) {
-			$gaMetric->setExpression( 'ga:pageviews' );
-		} elseif ( $metric === self::METRIC_UNIQUE ) {
-			$gaMetric->setExpression( 'ga:uniquePageviews' );
+	private function getChunkData( array $titles, array $dates, string $gaMetric ): StatusValue {
+		$dbKeys = array_map( [ $this->titleFormatter, 'getPrefixedDBkey' ], $titles );
+		$titleDimension = $this->getTitleDimension();
+		// The page as the report names it => prefixed DB key
+		if ( $this->readCustomDimensions ) {
+			$dbKeysByGATitle = $this->getDbKeysByPageIdOfTitles( $titles );
+			$filter = [ 'filter' => [
+				'fieldName' => $titleDimension,
+				'inListFilter' => [ 'values' => array_map( 'strval', array_keys( $dbKeysByGATitle ) ) ],
+			] ];
 		} else {
-			throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
+			$dbKeysByGATitle = array_combine(
+				array_map( [ $this->titleFormatter, 'getPrefixedText' ], $titles ),
+				$dbKeys
+			);
+			$filter = [ 'orGroup' => [ 'expressions' => array_map( fn ( $text ) => [
+				'filter' => [
+					'fieldName' => $titleDimension,
+					'stringFilter' => [
+						'matchType' => 'FULL_REGEXP',
+						'value' => $this->getPageTitleRegex( (string)$text ),
+						'caseSensitive' => true,
+					],
+				],
+			], array_keys( $dbKeysByGATitle ) ) ] ];
 		}
 
-		// Create the Dimension object.
-		$dimension = new Dimension();
-		$dimension->setName( 'ga:date' );
-
-		// Create the ReportRequest object.
-		$request = new ReportRequest();
-		$request->setViewId( $this->profileId );
-		$request->setDateRanges( [ $dateRange ] );
-		$request->setMetrics( [ $gaMetric ] );
-		$request->setDimensions( [ $dimension ] );
-
-		$body = new GetReportsRequest();
-		$body->setReportRequests( [ $request ] );
-
-		$status = Status::newGood();
-		try {
-			$data = $this->analytics->reports->batchGet( $body );
-			$rows = $data->getReports()[0]->getData()->getRows();
-
-			foreach ( $rows as $row ) {
-				$ts = $row->dimensions[0];
-				$day = substr( $ts, 0, 4 ) . '-' . substr( $ts, 4, 2 ) . '-' . substr( $ts, 6, 2 );
-				$count = (int)$row->metrics[0]->values[0];
-				$result[$day] = $count;
+		// A page with no row on a day had no views that day
+		$counts = array_fill_keys( $dbKeys, array_fill_keys( $dates, 0 ) );
+		if ( $dbKeysByGATitle ) {
+			$status = $this->runReport( [
+				'dateRanges' => [ [ 'startDate' => reset( $dates ), 'endDate' => end( $dates ) ] ],
+				'dimensions' => [ [ 'name' => 'date' ], [ 'name' => $titleDimension ] ],
+				'metrics' => [ [ 'name' => $gaMetric ] ],
+				'dimensionFilter' => $filter,
+				'limit' => self::ROW_LIMIT,
+			] );
+			if ( !$status->isOK() ) {
+				$status->success = array_fill_keys( $dbKeys, false );
+				$status->setResult( false, array_fill_keys( $dbKeys, array_fill_keys( $dates, null ) ) );
+				return $status;
 			}
-			$status->setResult( $status->isOK(), $result );
-		} catch ( RuntimeException $e ) {
-			$status->fatal( 'pvi-invalidresponse' );
-		}
-		return $status;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function getTopPages( $metric = self::METRIC_VIEW ) {
-		$result = [];
-		if ( !in_array( $metric, [ self::METRIC_VIEW, self::METRIC_UNIQUE ] ) ) {
-			throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
-		}
-
-		// Create the DateRange object.
-		$dateRange = new DateRange();
-		$dateRange->setStartDate( '2daysAgo' );
-		$dateRange->setEndDate( '1daysAgo' );
-
-		// Create the Metrics object and OrderBy object.
-		$gaMetric = new Metric();
-		$orderBy = new OrderBy();
-		$orderBy->setSortOrder( 'DESCENDING' );
-		if ( $metric === self::METRIC_VIEW ) {
-			$gaMetric->setExpression( 'ga:pageviews' );
-			$orderBy->setFieldName( 'ga:pageviews' );
-		} elseif ( $metric === self::METRIC_UNIQUE ) {
-			$gaMetric->setExpression( 'ga:uniquePageviews' );
-			$orderBy->setFieldName( 'ga:uniquePageviews' );
-		}
-
-		// Create the Dimension object.
-		$dimension = new Dimension();
-		$dimension->setName( $this->readCustomDimensions ? $this->getGAName( 'mw:page_title' ) : 'ga:pageTitle' );
-
-		// Create the ReportRequest object.
-		$request = new ReportRequest();
-		$request->setViewId( $this->profileId );
-		$request->setDateRanges( [ $dateRange ] );
-		$request->setMetrics( [ $gaMetric ] );
-		$request->setDimensions( [ $dimension ] );
-		$request->setOrderBys( [ $orderBy ] );
-
-		$body = new GetReportsRequest();
-		$body->setReportRequests( [ $request ] );
-
-		$status = Status::newGood();
-		try {
-			$data = $this->analytics->reports->batchGet( $body );
-			$rows = $data->getReports()[0]->getData()->getRows();
-
-			foreach ( $rows as $row ) {
-				$title = $row->dimensions[0];
-				$title = $this->pageTitleForMW( $title );
-				$count = (int)$row->metrics[0]->values[0];
-				$result[$title] = $count;
-			}
-			$status->setResult( $status->isOK(), $result );
-		} catch ( RuntimeException $e ) {
-			$status->fatal( 'pvi-invalidresponse' );
-		}
-		return $status;
-	}
-
-	/**
-	 * @param ReportRequest[] $requests
-	 * @return string[]
-	 */
-	protected static function extractExpressionsFromRequests( $requests ) {
-		$exps = [];
-		foreach ( $requests as $req ) {
-			foreach ( $req->getDimensionFilterClauses() as $clause ) {
-				foreach ( $clause->getFilters() as $filter ) {
-					foreach ( $filter->getExpressions() as $exp ) {
-						$exps[] = $exp;
-					}
+			foreach ( $status->getValue() as [ $date, $gaTitle, $count ] ) {
+				// Since the Google tag sends page_title, it is the page alone, as asked for. Older
+				// events carry the document title with the site name.
+				$dbKey = $dbKeysByGATitle[$gaTitle] ?? (
+					$this->readCustomDimensions ? null : $dbKeysByGATitle[$this->stripSiteName( $gaTitle )] ?? null
+				);
+				$day = self::formatDate( $date );
+				if ( $dbKey !== null && isset( $counts[$dbKey][$day] ) ) {
+					$counts[$dbKey][$day] += $count;
 				}
 			}
 		}
-		return $exps;
+
+		$status = StatusValue::newGood();
+		$status->success = array_fill_keys( $dbKeys, true );
+		$status->setResult( true, $counts );
+		return $status;
 	}
 
-	/**
-	 * @param string $mwName
-	 * @return string
-	 */
-	protected function getGAName( $mwName ) {
-		$flipped = array_flip( $this->customMap );
-		return 'ga:' . $flipped[$mwName];
+	/** @inheritDoc */
+	public function getSiteData( $days, $metric = self::METRIC_VIEW ) {
+		$gaMetric = self::getGAMetric( $metric );
+		if ( $days <= 0 ) {
+			throw new InvalidArgumentException( 'Invalid days: ' . $days );
+		}
+
+		$dates = $this->getDates( $days );
+		$status = $this->runReport( [
+			'dateRanges' => [ [ 'startDate' => reset( $dates ), 'endDate' => end( $dates ) ] ],
+			'dimensions' => [ [ 'name' => 'date' ] ],
+			'metrics' => [ [ 'name' => $gaMetric ] ],
+		] );
+		if ( !$status->isOK() ) {
+			return $status;
+		}
+
+		$result = array_fill_keys( $dates, 0 );
+		foreach ( $status->getValue() as [ $date, $count ] ) {
+			$day = self::formatDate( $date );
+			if ( isset( $result[$day] ) ) {
+				$result[$day] = $count;
+			}
+		}
+		$status->setResult( true, $result );
+		return $status;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
+	public function getTopPages( $metric = self::METRIC_VIEW ) {
+		$gaMetric = self::getGAMetric( $metric );
+		$yesterday = $this->getDates( 1 )[0];
+
+		$status = $this->runReport( [
+			'dateRanges' => [ [ 'startDate' => $yesterday, 'endDate' => $yesterday ] ],
+			'dimensions' => [ [ 'name' => $this->getTitleDimension() ] ],
+			'metrics' => [ [ 'name' => $gaMetric ] ],
+			'orderBys' => [ [ 'metric' => [ 'metricName' => $gaMetric ], 'desc' => true ] ],
+		] );
+		if ( !$status->isOK() ) {
+			return $status;
+		}
+
+		$rows = array_filter( $status->getValue(),
+			// GA4 names events without the dimension "(not set)", and the rows past its cardinality
+			// limits "(other)"
+			static fn ( $row ) => !in_array( $row[0], [ '', '(not set)', '(other)' ], true )
+		);
+		$dbKeysByPageId = [];
+		if ( $this->readCustomDimensions ) {
+			// Pages by their current title, which follows moves. Deleted pages drop out.
+			$dbKeysByPageId = $this->getDbKeysByPageId( array_column( $rows, 0 ) );
+		}
+		$result = [];
+		foreach ( $rows as [ $gaTitle, $count ] ) {
+			// Any page can be on top, so turn the title back into a DB key
+			$dbKey = $this->readCustomDimensions ?
+				$dbKeysByPageId[$gaTitle] ?? null :
+				str_replace( ' ', '_', $this->stripSiteName( $gaTitle ) );
+			if ( $dbKey !== null ) {
+				$result[$dbKey] = ( $result[$dbKey] ?? 0 ) + $count;
+			}
+		}
+		arsort( $result );
+		$status->setResult( true, $result );
+		return $status;
+	}
+
+	/** @inheritDoc */
 	public function getCacheExpiry( $metric, $scope ) {
 		// data is valid until the end of the day
 		$endOfDay = strtotime( '0:0 next day' );
@@ -370,71 +266,170 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	}
 
 	/**
-	 * @param array $apiOptions
+	 * Run one report
+	 * @param array $request RunReportRequest
+	 * @return StatusValue With a list of rows as its value when OK; each row is the dimension values
+	 *   followed by the first metric value as an integer
+	 */
+	private function runReport( array $request ): StatusValue {
+		$tokenStatus = $this->tokenProvider->getAccessToken();
+		if ( !$tokenStatus->isOK() ) {
+			$this->logger->error( 'Failed getting an access token for Google Analytics: {error}', [
+				'error' => self::describe( $tokenStatus ),
+			] );
+			return $tokenStatus;
+		}
+
+		$url = self::ENDPOINT . "/properties/{$this->propertyId}:runReport";
+		$httpRequest = $this->httpRequestFactory->create( $url, [
+			'method' => 'POST',
+			'postData' => FormatJson::encode( $request ),
+			'timeout' => self::TIMEOUT,
+		], __METHOD__ );
+		$httpRequest->setHeader( 'Content-Type', 'application/json' );
+		$httpRequest->setHeader( 'Authorization', 'Bearer ' . $tokenStatus->getValue() );
+		$httpStatus = $httpRequest->execute();
+		$data = FormatJson::decode( $httpRequest->getContent(), true );
+		if ( !$httpStatus->isOK() || !is_array( $data ) ) {
+			$this->logger->error( 'Failed fetching {requesturl}: {error}', [
+				'requesturl' => $url,
+				'error' => $data['error']['message'] ?? self::describe( $httpStatus ),
+			] );
+			$status = StatusValue::newFatal( 'pvi-invalidresponse' );
+			$status->merge( $httpStatus );
+			return $status;
+		}
+
+		$rows = [];
+		foreach ( $data['rows'] ?? [] as $row ) {
+			$values = array_column( $row['dimensionValues'] ?? [], 'value' );
+			$values[] = (int)( $row['metricValues'][0]['value'] ?? 0 );
+			$rows[] = $values;
+		}
+		return StatusValue::newGood( $rows );
+	}
+
+	/**
+	 * Message keys and parameters of a status for the log, which needs no message lookup
+	 * @param StatusValue $status
+	 * @return string
+	 */
+	private static function describe( StatusValue $status ): string {
+		return implode( '; ', array_map(
+			static fn ( $message ) => $message->getKey() . ' ' . FormatJson::encode( array_map(
+				static fn ( $param ) => $param instanceof MessageParam ? $param->getValue() : $param,
+				$message->getParams()
+			) ),
+			$status->getMessages()
+		) );
+	}
+
+	/**
+	 * @param string $metric One of the METRIC_* constants
+	 * @return string GA4 metric name
 	 * @throws InvalidArgumentException
 	 */
-	protected function verifyApiOptions( array $apiOptions ) {
-		if ( !isset( $apiOptions['credentialsFile'] ) ) {
-			throw new InvalidArgumentException( "'credentialsFile' is required" );
-		} elseif ( !isset( $apiOptions['profileId'] ) ) {
-			throw new InvalidArgumentException( "'profileId' is required" );
+	private static function getGAMetric( $metric ): string {
+		if ( $metric === self::METRIC_VIEW ) {
+			return 'screenPageViews';
+		} elseif ( $metric === self::METRIC_UNIQUE ) {
+			return 'totalUsers';
 		}
+		throw new InvalidArgumentException( 'Invalid metric: ' . $metric );
+	}
+
+	private function getTitleDimension(): string {
+		return $this->readCustomDimensions ?
+			'customEvent:' . Constants::EVENT_PARAM_PAGE_ID :
+			'pageTitle';
 	}
 
 	/**
-	 * The API omits dates if there is no data. Fill it with nulls to make client-side
-	 * processing easier.
-	 * @param int $days
-	 * @return array YYYY-MM-DD => null
+	 * @param PageReference[] $titles
+	 * @return string[] Prefixed DB key by page ID, for the pages that exist
 	 */
-	protected function getEmptyDateRange( $days ) {
-		if ( !$this->range ) {
-			$this->range = [];
-			// we only care about the date part, so add some hours to avoid errors when there is a
-			// leap second or some other weirdness
-			$end = $this->lastCompleteDay + 12 * 3600;
-			$start = $end - ( $days - 1 ) * 24 * 3600;
-			for ( $ts = $start; $ts <= $end; $ts += 24 * 3600 ) {
-				$this->range[gmdate( 'Y-m-d', $ts )] = null;
-			}
+	private function getDbKeysByPageIdOfTitles( array $titles ): array {
+		$byNamespace = [];
+		foreach ( $titles as $title ) {
+			$byNamespace[$title->getNamespace()][] = $title->getDBkey();
 		}
-		return $this->range;
+		$dbKeys = [];
+		foreach ( $byNamespace as $namespace => $namespaceDbKeys ) {
+			$dbKeys += $this->fetchDbKeysByPageId(
+				$this->pageStore->newSelectQueryBuilder()->whereTitles( $namespace, $namespaceDbKeys )
+			);
+		}
+		return $dbKeys;
 	}
 
 	/**
-	 * Get start and end timestamp in YYYYMMDDHH format
-	 * @param int $days
+	 * @param string[] $pageIds Page IDs as GA4 reports them
+	 * @return string[] Current prefixed DB key by page ID, for the pages that still exist
+	 */
+	private function getDbKeysByPageId( array $pageIds ): array {
+		$pageIds = array_map( 'intval', array_filter( $pageIds, 'ctype_digit' ) );
+		if ( !$pageIds ) {
+			return [];
+		}
+		return $this->fetchDbKeysByPageId( $this->pageStore->newSelectQueryBuilder()->wherePageIds( $pageIds ) );
+	}
+
+	/**
+	 * @param PageSelectQueryBuilder $query
 	 * @return string[]
 	 */
-	protected function getStartEnd( $days ) {
-		$end = $this->lastCompleteDay + 12 * 3600;
-		$start = $end - ( $days - 1 ) * 24 * 3600;
-		return [ gmdate( 'Ymd', $start ) . '00', gmdate( 'Ymd', $end ) . '00' ];
-	}
-
-	/**
-	 * @param string $gaTitle
-	 * @return string title text converted MediaWiki-friendly
-	 */
-	protected static function pageTitleForMW( $gaTitle ) {
-		// TODO: Use "pagetitle" and "pagetitle-view-mainpage" messages
-		$title = preg_replace( '/ - [^-]+$/', '', $gaTitle );
-		$title = preg_replace( '/ /', '_', $title );
-
-		return $title;
-	}
-
-	/**
-	 * @param string[] $names
-	 * @return Dimension[]
-	 */
-	protected function createDimensions( $names ) {
-		$dimensions = [];
-		foreach ( $names as $name ) {
-			$dimension = new Dimension();
-			$dimension->setName( $name );
-			$dimensions[] = $dimension;
+	private function fetchDbKeysByPageId( PageSelectQueryBuilder $query ): array {
+		$dbKeys = [];
+		foreach ( $query->fetchPageRecords() as $record ) {
+			$dbKeys[$record->getId()] = $this->titleFormatter->getPrefixedDBkey( $record );
 		}
-		return $dimensions;
+		return $dbKeys;
+	}
+
+	/**
+	 * Match the page title as the Google tag sends it in page_title, or as GA4 took it from the
+	 * document title, "<page> - <site name>", before the tag sent page_title. The separator
+	 * depends on the interface language. This does not match a document title from a page with
+	 * {{DISPLAYTITLE:}}, from the main page or from a customized MediaWiki:Pagetitle.
+	 *
+	 * @param string $prefixedText The page as TitleFormatter::getPrefixedText() gives it
+	 * @return string A regular expression in the RE2 syntax GA4 uses
+	 */
+	private function getPageTitleRegex( string $prefixedText ): string {
+		return preg_quote( $prefixedText ) .
+			'( ' . self::SITE_NAME_SEPARATOR . ' ' . preg_quote( $this->siteName ) . ')?';
+	}
+
+	/**
+	 * @param string $title A page title, or a document title "<page> - <site name>"
+	 * @return string The page part
+	 */
+	private function stripSiteName( string $title ): string {
+		return preg_replace(
+			'/ ' . self::SITE_NAME_SEPARATOR . ' ' . preg_quote( $this->siteName, '/' ) . '$/u', '', $title
+		) ?? $title;
+	}
+
+	/**
+	 * @param string $date YYYYMMDD
+	 * @return string YYYY-MM-DD
+	 */
+	private static function formatDate( string $date ): string {
+		return substr( $date, 0, 4 ) . '-' . substr( $date, 4, 2 ) . '-' . substr( $date, 6, 2 );
+	}
+
+	/**
+	 * The days to report, in the wiki's time zone. The current day is left out, as only partial
+	 * information is available for it.
+	 *
+	 * @param int $days
+	 * @return string[] YYYY-MM-DD, oldest first, ending with yesterday
+	 */
+	private function getDates( int $days ): array {
+		$dates = [];
+		for ( $i = $days; $i >= 1; $i-- ) {
+			$dates[] = date( 'Y-m-d', strtotime( "today -$i days" ) );
+		}
+		return $dates;
 	}
 }
