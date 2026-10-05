@@ -4,8 +4,8 @@ namespace MediaWiki\Extension\PageViewInfoGA\Hooks;
 
 use MediaWiki\Extension\PageViewInfo\CachedPageViewService;
 use MediaWiki\Extension\PageViewInfoGA\Constants;
+use MediaWiki\Extension\PageViewInfoGA\CredentialsFileTokenProvider;
 use MediaWiki\Extension\PageViewInfoGA\GoogleAnalyticsPageViewService;
-use MediaWiki\Extension\PageViewInfoGA\ServiceAccountTokenProvider;
 use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MainConfigNames;
 use MediaWiki\MediaWikiServices as MediaWikiServicesContainer;
@@ -30,7 +30,7 @@ class MediaWikiServices implements \MediaWiki\Hook\MediaWikiServicesHook {
 				$cache = $services->getObjectCacheFactory()->getLocalClusterInstance();
 				$titleFormatter = $services->getTitleFormatter();
 
-				$tokenProvider = new ServiceAccountTokenProvider(
+				$tokenProvider = new CredentialsFileTokenProvider(
 					$services->getHttpRequestFactory(),
 					$cache,
 					(string)$config->get( Constants::CONFIG_KEY_CREDENTIALS_FILE ),

@@ -53,7 +53,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 	 * @param HttpRequestFactory $httpRequestFactory
 	 * @param TitleFormatter $titleFormatter
 	 * @param PageStore $pageStore
-	 * @param ServiceAccountTokenProvider $tokenProvider
+	 * @param CredentialsFileTokenProvider $tokenProvider
 	 * @param array $options
 	 *   - propertyId: (string|int) GA4 property ID, like 123456789 or "properties/123456789"
 	 *   - siteName: (string) $wgSitename, which events from before the Google tag sent page_title
@@ -68,7 +68,7 @@ class GoogleAnalyticsPageViewService implements PageViewService, LoggerAwareInte
 		private readonly HttpRequestFactory $httpRequestFactory,
 		private readonly TitleFormatter $titleFormatter,
 		private readonly PageStore $pageStore,
-		private readonly ServiceAccountTokenProvider $tokenProvider,
+		private readonly CredentialsFileTokenProvider $tokenProvider,
 		array $options
 	) {
 		// Accept "properties/123" as the API shows it

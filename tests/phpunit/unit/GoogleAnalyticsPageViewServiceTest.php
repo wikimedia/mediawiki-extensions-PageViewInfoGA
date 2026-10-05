@@ -7,8 +7,8 @@ use DateInterval;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use MediaWiki\Extension\PageViewInfo\PageViewService;
+use MediaWiki\Extension\PageViewInfoGA\CredentialsFileTokenProvider;
 use MediaWiki\Extension\PageViewInfoGA\GoogleAnalyticsPageViewService;
-use MediaWiki\Extension\PageViewInfoGA\ServiceAccountTokenProvider;
 use MediaWiki\Http\HttpRequestFactory;
 use MediaWiki\Http\MWHttpRequest;
 use MediaWiki\Json\FormatJson;
@@ -77,7 +77,7 @@ class GoogleAnalyticsPageViewServiceTest extends MediaWikiUnitTestCase {
 			} );
 			return $query;
 		} );
-		$tokenProvider = $this->createMock( ServiceAccountTokenProvider::class );
+		$tokenProvider = $this->createMock( CredentialsFileTokenProvider::class );
 		$tokenProvider->method( 'getAccessToken' )->willReturn( $tokenStatus ?? StatusValue::newGood( 'token' ) );
 
 		return new GoogleAnalyticsPageViewService( $httpRequestFactory, $titleFormatter, $pageStore,
