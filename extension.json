@@ -1,6 +1,6 @@
 {
 	"name": "PageViewInfoGA",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"author": "[https://femiwiki.com/ Femiwiki Team]",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageViewInfoGA",
 	"descriptionmsg": "pageviewinfoga-desc",
@@ -37,7 +37,7 @@
 		},
 		"PageViewInfoGACredentialsFile": {
 			"value": false,
-			"description": "Path to the JSON key file of a Google Cloud service account that has the Viewer role on the GA4 property."
+			"description": "Path to a JSON credentials file that google/auth reads, for a Google Cloud service account that has the Viewer role on the GA4 property: the service account's key, or an external_account credential configuration for Workload Identity Federation."
 		},
 		"PageViewInfoGAPropertyId": {
 			"value": false,

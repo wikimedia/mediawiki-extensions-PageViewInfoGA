@@ -5,5 +5,5 @@
 		]
 	},
 	"pageviewinfoga-desc": "Implements PageViewService for GoogleAnalytics.",
-	"pageviewinfoga-error-credentials": "PageViewInfoGA cannot use its Google service account key."
+	"pageviewinfoga-error-credentials": "PageViewInfoGA cannot use its Google credentials."
 }
