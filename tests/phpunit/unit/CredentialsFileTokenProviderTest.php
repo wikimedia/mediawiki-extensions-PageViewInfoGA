@@ -23,6 +23,9 @@ class CredentialsFileTokenProviderTest extends MediaWikiUnitTestCase {
 	/** @var string[] */
 	private array $files = [];
 
+	/** @var RequestInterface[] Sent by the last provider from newProvider() */
+	private array $requests = [];
+
 	public static function setUpBeforeClass(): void {
 		parent::setUpBeforeClass();
 		$key = openssl_pkey_new( [ 'private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA ] );
@@ -54,7 +57,9 @@ class CredentialsFileTokenProviderTest extends MediaWikiUnitTestCase {
 	 * @return CredentialsFileTokenProvider
 	 */
 	private function newProvider( string $file, array $responses ): CredentialsFileTokenProvider {
+		$this->requests = [];
 		$handler = function ( RequestInterface $request ) use ( &$responses ) {
+			$this->requests[] = $request;
 			$this->assertNotEmpty( $responses, 'Unexpected request to ' . $request->getUri() );
 			return array_shift( $responses );
 		};
@@ -114,6 +119,23 @@ class CredentialsFileTokenProviderTest extends MediaWikiUnitTestCase {
 		$this->assertSame( 'impersonated', $provider->getAccessToken()->getValue() );
 		// Served from the cache, as there are two responses
 		$this->assertSame( 'impersonated', $provider->getAccessToken()->getValue() );
+	}
+
+	public function testImpersonationScopes() {
+		$provider = $this->newProvider( $this->externalAccountFile(), [
+			self::stsResponse(),
+			self::impersonationResponse(),
+		] );
+		$provider->getAccessToken();
+
+		[ $sts, $impersonation ] = $this->requests;
+		parse_str( (string)$sts->getBody(), $stsBody );
+		// The STS token must be allowed to call the IAM Credentials API
+		$this->assertSame(
+			'https://www.googleapis.com/auth/cloud-platform ' . self::SCOPE,
+			$stsBody['scope']
+		);
+		$this->assertContains( self::SCOPE, json_decode( (string)$impersonation->getBody(), true )['scope'] );
 	}
 
 	public function testFailureIsNotCached() {

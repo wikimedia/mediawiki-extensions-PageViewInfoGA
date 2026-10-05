@@ -28,6 +28,8 @@ class CredentialsFileTokenProvider implements LoggerAwareInterface {
 	/** Seconds to wait for a Google endpoint or a URL credential source */
 	private const TIMEOUT = 5;
 	private const CONNECT_TIMEOUT = 2;
+	/** Lets a federated token call the IAM Credentials API to impersonate a service account */
+	private const CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 
 	/** @var callable Sends a PSR-7 request and returns the response, as google/auth expects */
 	private $httpHandler;
@@ -98,8 +100,17 @@ class CredentialsFileTokenProvider implements LoggerAwareInterface {
 		if ( !$status->isOK() || !is_array( $status->getValue() ) ) {
 			return 'not a JSON object';
 		}
+		$json = $status->getValue();
+		$scope = $this->scope;
+		// google/auth asks STS for the same scopes as the impersonated token, and without
+		// cloud-platform the STS token is refused by the IAM Credentials API
+		if ( ( $json['type'] ?? null ) === 'external_account' &&
+			isset( $json['service_account_impersonation_url'] )
+		) {
+			$scope = [ self::CLOUD_PLATFORM_SCOPE, $this->scope ];
+		}
 		try {
-			$this->credentials = CredentialsLoader::makeCredentials( $this->scope, $status->getValue() );
+			$this->credentials = CredentialsLoader::makeCredentials( $scope, $json );
 		} catch ( Exception $e ) {
 			return $e->getMessage();
 		}
