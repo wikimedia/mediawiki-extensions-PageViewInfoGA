@@ -4,5 +4,6 @@
 			"GuoPC"
 		]
 	},
-	"pageviewinfoga-desc": "为GoogleAnalytics实现PageViewService。"
+	"pageviewinfoga-desc": "用于GoogleAnalytics的PageViewService实现。",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA无法使用其Google凭据。"
 }

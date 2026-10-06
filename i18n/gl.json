@@ -4,5 +4,6 @@
 			"Toliño"
 		]
 	},
-	"pageviewinfoga-desc": "Implementa o servizo PageViewService para GoogleAnalytics."
+	"pageviewinfoga-desc": "Implementa o servizo PageViewService para GoogleAnalytics.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA non pode usar as credenciais de Google."
 }

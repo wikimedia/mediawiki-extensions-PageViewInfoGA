@@ -2,5 +2,6 @@
 	"@metadata": {
 		"authors": []
 	},
-	"pageviewinfoga-desc": "Implementiert PageViewService für GoogleAnalytics."
+	"pageviewinfoga-desc": "Implementiert PageViewService für GoogleAnalytics.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA kann seine Google-Zugangsdaten nicht verwenden."
 }
