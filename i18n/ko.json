@@ -1,8 +1,10 @@
 {
 	"@metadata": {
 		"authors": [
+			"Tensama0415",
 			"렌즈"
 		]
 	},
-	"pageviewinfoga-desc": "GoogleAnalytics를 위해 PageViewService를 구현합니다."
+	"pageviewinfoga-desc": "GoogleAnalytics를 위해 PageViewService를 구현합니다.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA가 Google 자격 증명을 사용할 수 없습니다."
 }

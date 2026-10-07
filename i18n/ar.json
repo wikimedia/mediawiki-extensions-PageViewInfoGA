@@ -4,5 +4,6 @@
 			"Meno25"
 		]
 	},
-	"pageviewinfoga-desc": "تنفذ PageViewService لـ GoogleAnalytics."
+	"pageviewinfoga-desc": "تنفذ PageViewService لـ GoogleAnalytics.",
+	"pageviewinfoga-error-credentials": "لا يمكن لـ PageViewInfoGA استخدام بيانات اعتماد جوجل الخاصة به."
 }
