@@ -4,5 +4,5 @@
 			"GuoPC"
 		]
 	},
-	"pageviewinfoga-desc": "为GoogleAnalytics实现PageViewService。"
+	"pageviewinfoga-desc": "用于GoogleAnalytics的PageViewService实现。"
 }
