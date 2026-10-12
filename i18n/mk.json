@@ -4,5 +4,6 @@
 			"Bjankuloski06"
 		]
 	},
-	"pageviewinfoga-desc": "Го спроведува PageViewService за Гугл Аналитика."
+	"pageviewinfoga-desc": "Го спроведува PageViewService за Гугл Аналитика.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA не може да ги користи неговите најавни податоци од Гугл."
 }
