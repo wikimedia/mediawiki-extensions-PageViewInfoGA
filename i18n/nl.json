@@ -1,8 +1,10 @@
 {
 	"@metadata": {
 		"authors": [
-			"McDutchie"
+			"McDutchie",
+			"Siebrand"
 		]
 	},
-	"pageviewinfoga-desc": "Implementeert PageViewService voor GoogleAnalytics."
+	"pageviewinfoga-desc": "Implementeert PageViewService voor GoogleAnalytics.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA kan de ingestelde Google-gegevens niet gebruiken."
 }
