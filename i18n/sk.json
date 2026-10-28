@@ -4,5 +4,6 @@
 			"Wizzard"
 		]
 	},
-	"pageviewinfoga-desc": "Implementuje PageViewService pre GoogleAnalytics."
+	"pageviewinfoga-desc": "Implementuje PageViewService pre GoogleAnalytics.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA nemôže použiť svoje prihlasovacie údaje Google."
 }
