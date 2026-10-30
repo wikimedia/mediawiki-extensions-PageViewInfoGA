@@ -4,5 +4,6 @@
 			"شاه زمان پټان"
 		]
 	},
-	"pageviewinfoga-desc": "د گوگل‌ارزوونکي لپاره د مخ‌کتنې‌خدمت پلی کوي."
+	"pageviewinfoga-desc": "د گوگل‌ارزوونکي لپاره د مخ‌کتنې‌خدمت پلی کوي.",
+	"pageviewinfoga-error-credentials": "PageViewInfoGA نشي کولای چې خپل د گوگل باورليکونه وکاروئ."
 }
