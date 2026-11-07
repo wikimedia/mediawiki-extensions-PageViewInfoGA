@@ -39,6 +39,7 @@ class MainHooksTest extends MediaWikiUnitTestCase {
 		( new Main( new HashConfig( $config + [
 			'PageViewInfoGATrackingID' => 'G-TEST',
 			'PageViewInfoGAWriteCustomDimensions' => true,
+			'PageViewInfoGALoadAfterPageLoad' => false,
 		] ) ) )->onBeforePageDisplay( $out, null );
 		return $head;
 	}
@@ -66,6 +67,16 @@ class MainHooksTest extends MediaWikiUnitTestCase {
 
 		$head = $this->render( [ 'PageViewInfoGAWriteCustomDimensions' => false ], $query );
 		$this->assertStringContainsString( '{"page_title":"Talk:It\'s \u003C/b\u003E"}', $head );
+	}
+
+	public function testLoadAfterPageLoad() {
+		$head = $this->render( [ 'PageViewInfoGALoadAfterPageLoad' => true ] );
+
+		$this->assertStringNotContainsString( '<script async', $head );
+		$this->assertStringContainsString( 'addEventListener("load",function(){', $head );
+		$this->assertStringContainsString( 's.src="https://www.googletagmanager.com/gtag/js?id=G-TEST";', $head );
+		$this->assertStringContainsString(
+			'gtag("config","G-TEST",{"page_title":"Talk:It\'s \u003C/b\u003E","mw_page_id":42});', $head );
 	}
 
 	public static function provideNotAView() {

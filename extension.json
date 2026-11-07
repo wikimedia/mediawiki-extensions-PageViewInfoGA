@@ -35,6 +35,10 @@
 			"value": false,
 			"description": "Measurement ID of the GA4 web data stream, like G-XXXXXXXXXX, to add the Google tag to every page. False adds no tag."
 		},
+		"PageViewInfoGALoadAfterPageLoad": {
+			"value": false,
+			"description": "Load the Google tag after the page's load event, so that it does not take network and main thread time from the page while it loads. Visits that leave before the page has loaded are not counted."
+		},
 		"PageViewInfoGACredentialsFile": {
 			"value": false,
 			"description": "Path to a JSON credentials file that google/auth reads, for a Google Cloud service account that has the Viewer role on the GA4 property: the service account's key, or an external_account credential configuration for Workload Identity Federation."

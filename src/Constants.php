@@ -23,6 +23,11 @@ final class Constants {
 	/**
 	 * @var string
 	 */
+	public const CONFIG_KEY_LOAD_AFTER_PAGE_LOAD = 'PageViewInfoGALoadAfterPageLoad';
+
+	/**
+	 * @var string
+	 */
 	public const CONFIG_KEY_WRITE_CUSTOM_DIMENSIONS = 'PageViewInfoGAWriteCustomDimensions';
 
 	/**

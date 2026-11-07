@@ -34,12 +34,18 @@ class Main implements
 		}
 
 		$title = $out->getTitle();
+		$src = 'https://www.googletagmanager.com/gtag/js?id=' . rawurlencode( $trackingID );
 		$googleTag = "<!-- Google tag (gtag.js) -->\n";
-		$googleTag .= Html::rawElement( 'script', [
-			'async',
-			'src' => 'https://www.googletagmanager.com/gtag/js?id=' . rawurlencode( $trackingID ),
-		] );
-		$jsSnippet = 'window.dataLayer=window.dataLayer||[];' .
+		$jsSnippet = '';
+		if ( $this->config->get( Constants::CONFIG_KEY_LOAD_AFTER_PAGE_LOAD ) ) {
+			// gtag.js sends what the dataLayer below has queued once it runs
+			$jsSnippet .= 'addEventListener("load",function(){' .
+				'var s=document.createElement("script");s.async=true;s.src=' . Html::encodeJsVar( $src ) . ';' .
+				'document.head.appendChild(s);});';
+		} else {
+			$googleTag .= Html::rawElement( 'script', [ 'async', 'src' => $src ] );
+		}
+		$jsSnippet .= 'window.dataLayer=window.dataLayer||[];' .
 			'function gtag(){dataLayer.push(arguments);}' .
 			"gtag('js',new Date());";
 
